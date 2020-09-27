@@ -78,9 +78,9 @@ app.action('DAILY', async ctx => {
 	const items = notification.items;
 
 	if (items.length === 0) {
-		return ctx.editMessageText(`❎ You have already claimed today's reward!\nDays logged in: *${notification.daysLoggedIn}*`);
+		return ctx.editMessageText(`❎ You have already claimed today's reward!\nDays logged in: **${notification.daysLoggedIn}**`);
 	}
-	return ctx.editMessageText(`✅ Successfully Claimed Daily Reward!\nDays logged in: *${notification.daysLoggedIn}*\nClaimed: `` + JSON.stringify(items, null, 4) + `);
+	return ctx.editMessageText(`✅ Successfully Claimed Daily Reward!\nDays logged in: **${notification.daysLoggedIn}**\nClaimed: `` + JSON.stringify(items, null, 4) + `);
 });
 
 app.on('callback_query', ctx => {
