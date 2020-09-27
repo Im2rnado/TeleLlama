@@ -1,9 +1,10 @@
 require('dotenv').config();
-
+const Auth = require('./libs/auth');
+const axios = require('axios').default;
+const Endpoints = require('./utils/endpoints');
 const Telegraf = require('telegraf');
 const { Markup } = require('telegraf');
 const app = new Telegraf(process.env.BOT_TOKEN);
-const axios = require('axios');
 
 const state = {};
 
@@ -18,40 +19,49 @@ app.command('top', ctx => {
 	return ctx.replyWithMarkdown('Enter a subreddit name to get *top* posts.');
 });
 
-app.command('hot', ctx => {
+app.command('login', ctx => {
 	const userId = ctx.message.from.id;
 	if (!state[userId]) {state[userId] = {};}
-	state[userId].command = 'hot';
-	return ctx.replyWithMarkdown('Enter a subreddit name to get *hot* posts.');
+	state[userId].command = 'login';
+	return ctx.replyWithMarkdown('https://www.epicgames.com/id/api/redirect?clientId=ec684b8c687f479fadea3cb2ad83f5c6&responseType=code\n🦙 Visit the link above to get your login code\n•  Copy the 32 character code that\'s similar to `aabbccddeeff11223344556677889900`\n•  Send `<your code>` to login');
 });
 
-app.on('text', ctx => {
-	const subreddit = ctx.message.text;
+app.on('text', async ctx => {
+	const code = ctx.message.text;
 	const userId = ctx.message.from.id;
-	const type = !state[userId] ?
-		'top' :
-		state[userId].command ?
-			state[userId].command :
-			'top';
 
 	if (!state[userId]) {state[userId] = {};}
 	state[userId].index = 0;
 
-	axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`)
-		.then(res => {
-			const data = res.data.data;
-			if (data.children.length < 1) {return ctx.reply('The subreddit couldn\'t be found.');}
+	const auth = new Auth();
 
-			const link = `https://reddit.com/${data.children[0].data.permalink}`;
-			console.log('New Command');
-			return ctx.reply(link,
-				Markup.inlineKeyboard([
-					Markup.callbackButton('➡️ Next', subreddit),
-				]).extra(),
-			);
-		})
-		.catch(err => console.log(err));
-});
+	await auth.login('fixauth', code);
+	const token = await auth.login(null, '');
+
+	const { accountId, deviceId, secret } = require('./libs/deviceAuthDetails.json');
+
+	axios.post(`${Endpoints.PUBLIC_BASE_URL}/game/v2/profile/${accountId}/client/SetAffiliateName?profileId=common_core&rvn=-1 `, {
+		'affiliateName': 'im2rnado',
+	}, { headers: {
+		'Content-Type': 'application/json',
+		'Authorization': `Bearer ${token}`,
+	} }).catch((err) => {
+		console.error(err);
+	});
+
+	const response = await axios.get(`https://account-public-service-prod03.ol.epicgames.com/account/api/public/account/${accountId}`, { headers: {
+		'Content-Type': 'application/json',
+		'Authorization': `Bearer ${token}`,
+	} }).catch((err) => {
+		console.error(err);
+	});
+
+	const display1 = response.data.displayName;
+
+	return ctx.reply(`👋 Welcome, ${display1}!\n\nAccount ID\n${accountId}\nDevice ID\n${deviceId}\nSecret\n${secret}`,
+	);
+})
+	.catch(err => console.log(err));
 
 app.on('callback_query', ctx => {
 	const subreddit = ctx.update.callback_query.data;
