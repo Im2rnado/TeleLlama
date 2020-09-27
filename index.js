@@ -12,13 +12,6 @@ app.hears('hi', ctx => {
 	return ctx.reply('Hey!');
 });
 
-app.command('top', ctx => {
-	const userId = ctx.message.from.id;
-	if (!state[userId]) {state[userId] = {};}
-	state[userId].command = 'top';
-	return ctx.replyWithMarkdown('Enter a subreddit name to get *top* posts.');
-});
-
 app.command('login', ctx => {
 	const userId = ctx.message.from.id;
 	if (!state[userId]) {state[userId] = {};}
@@ -59,9 +52,36 @@ app.on('text', async ctx => {
 	const display1 = response.data.displayName;
 
 	return ctx.reply(`👋 Welcome, ${display1}!\n\nAccount ID\n${accountId}\nDevice ID\n${deviceId}\nSecret\n${secret}`,
+		Markup.inlineKeyboard([
+			Markup.callbackButton('➡️ Claim Daily', 'DAILY'),
+		]).extra(),
 	);
 })
 	.catch(err => console.log(err));
+
+app.action('DAILY', async ctx => {
+
+	const auth = new Auth();
+
+	const token = await auth.login(null, '');
+	console.log(token);
+
+	const { accountId } = require('./libs/deviceAuthDetails.json');
+
+	const response = await axios.post(`${Endpoints.PUBLIC_BASE_URL}/game/v2/profile/${accountId}/client/ClaimLoginReward?profileId=campaign&rvn=-1`, {}, { headers: {
+		'Content-Type': 'application/json',
+		'Authorization': `Bearer ${token}`,
+	} }).catch((err) => {
+		console.error(err);
+	});
+	const notification = response.data.notifications[0];
+	const items = notification.items;
+
+	if (items.length === 0) {
+		return ctx.editMessageText(`❎ You have already claimed today's reward!\nDays logged in: *${notification.daysLoggedIn}*`);
+	}
+	return ctx.editMessageText(`✅ Successfully Claimed Daily Reward!\nDays logged in: *${notification.daysLoggedIn}*\nClaimed: `` + JSON.stringify(items, null, 4) + `);
+});
 
 app.on('callback_query', ctx => {
 	const subreddit = ctx.update.callback_query.data;
