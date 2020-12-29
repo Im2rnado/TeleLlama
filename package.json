@@ -16,8 +16,11 @@
   "dependencies": {
     "axios": "^0.20.0",
     "axios-cookiejar-support": "^1.0.0",
+    "canvas": "^2.6.1",
     "dotenv": "^8.2.0",
     "fs": "0.0.1-security",
+    "moment": "^2.29.1",
+    "mongoose": "^5.11.8",
     "querystring": "^0.2.0",
     "telegraf": "^3.38.0",
     "tough-cookie": "^4.0.0"

@@ -1,116 +1,361 @@
-require('dotenv').config();
-const Auth = require('./libs/auth');
-const axios = require('axios').default;
-const Endpoints = require('./utils/endpoints');
-const Telegraf = require('telegraf');
-const { Markup } = require('telegraf');
+/* eslint-disable no-inline-comments */
+
+// Resources
+require("dotenv").config();
+const Auth = require("./libs/auth");
+const Endpoints = require("./utils/endpoints");
+
+// Modules
+const axios = require("axios").default;
+const mongoose = require("mongoose");
+const moment = require("moment");
+const fs = require("fs");
+const Telegraf = require("telegraf");
+const { Markup } = require("telegraf");
 const app = new Telegraf(process.env.BOT_TOKEN);
 
-const state = {};
+// Database
+const premUsers = require("./models/premium.js"),
+	deviceauth = require("./models/deviceauth.js"),
+	deviceauth1 = require("./models/deviceauth1.js"),
+	deviceauth2 = require("./models/deviceauth2.js"),
+	deviceauth3 = require("./models/deviceauth3.js"),
+	deviceauth4 = require("./models/deviceauth4.js"),
+	deviceauth5 = require("./models/deviceauth5.js");
 
-app.hears('hi', ctx => {
-	return ctx.reply('Hey!');
+fs.readdirSync(`${__dirname}/commands/`).forEach(file => {
+	const command = require(`${__dirname}/commands/${file}`);
+
+	if (command.name) {
+		app.command(command.name, ctx => {
+			command.execute(ctx);
+		});
+	}
 });
 
-app.command('login', ctx => {
-	const userId = ctx.message.from.id;
-	if (!state[userId]) {state[userId] = {};}
-	state[userId].command = 'login';
-	return ctx.replyWithMarkdown('https://www.epicgames.com/id/api/redirect?clientId=ec684b8c687f479fadea3cb2ad83f5c6&responseType=code\n🦙 Visit the link above to get your login code\n•  Copy the 32 character code that\'s similar to `aabbccddeeff11223344556677889900`\n•  Send `<your code>` to login');
+app.hears("hi", async (ctx) => {
+	const tag = await premUsers.findOne({
+		ID: ctx.from.id,
+	});
+	if (!tag) {
+		return ctx.reply("❌ Purchase Premium from @im2rnado first!");
+	}
+	console.log(ctx.from);
+	ctx.reply("Hey!");
 });
 
-app.on('text', async ctx => {
-	const code = ctx.message.text;
-	const userId = ctx.message.from.id;
-
-	if (!state[userId]) {state[userId] = {};}
-	state[userId].index = 0;
+app.action("ACCINFO", async ctx => {
+	const tagName = ctx.from.id;
 
 	const auth = new Auth();
 
-	await auth.login('fixauth', code);
-	const token = await auth.login(null, '');
+	const token = await auth.login(null, tagName);
+	console.log(token.access_token);
+	const accountId = token.account_id;
 
-	const { accountId, deviceId, secret } = require('./libs/deviceAuthDetails.json');
-
-	axios.post(`${Endpoints.PUBLIC_BASE_URL}/game/v2/profile/${accountId}/client/SetAffiliateName?profileId=common_core&rvn=-1 `, {
-		'affiliateName': 'im2rnado',
-	}, { headers: {
-		'Content-Type': 'application/json',
-		'Authorization': `Bearer ${token}`,
+	const response = await axios.get(`${Endpoints.DEVICE_AUTH}/${accountId}`, { headers: {
+		"Content-Type": "application/json",
+		"Authorization": `Bearer ${token.access_token}`,
 	} }).catch((err) => {
 		console.error(err);
+		return ctx.reply(`An error has occured: ${err.response.data.errorMessage}`);
 	});
 
-	const response = await axios.get(`https://account-public-service-prod03.ol.epicgames.com/account/api/public/account/${accountId}`, { headers: {
-		'Content-Type': 'application/json',
-		'Authorization': `Bearer ${token}`,
-	} }).catch((err) => {
-		console.error(err);
+	const id = response.data.id;
+	const displayname = response.data.displayName;
+	const fname = response.data.name;
+	const email = response.data.email;
+	const lastlogin = response.data.lastLogin;
+	const dischanges = response.data.numberOfDisplayNameChanges;
+	const country = response.data.country;
+	const lname = response.data.lastName;
+	const pnumber = response.data.phoneNumber;
+	const canupdaten = response.data.canUpdateDisplayName;
+	const canupdatenext = response.data.canUpdateDisplayNameNext;
+	const tfa = response.data.tfaEnabled;
+	const ever = response.data.emailVerified;
+
+	return ctx.reply(`*${displayname}*'s Info\n\n*Account ID*: ${id}\n*Real Name*: ${fname} ${lname}\n*Email*: ${email}\n*Phone Number*: ${!pnumber ? "No Phone Number" : pnumber}\n*Account Country*: ${country}\n*Last Login*: ${moment.utc(lastlogin).format("dddd, MMMM Do YYYY, HH:mm")}\n*Display Name Changes*: ${dischanges}\n*Can update Display Name*? ${!canupdaten == true ? `${canupdaten}, ${moment.utc(canupdatenext).format("dddd, MMMM Do YYYY, HH:mm:ss")}` : canupdaten }\n*Email Verified*? ${ever}\n*2FA On*? ${tfa}`, { parse_mode: "markdown" });
+});
+
+app.action("acc1", async ctx => {
+	const tagName = ctx.from.id;
+
+	// Fetches current logged in account
+	const exist = await deviceauth.findOne({
+		authorID: tagName,
 	});
 
-	const display1 = response.data.displayName;
+	if (exist) {
+		await deviceauth.findOneAndDelete({
+			authorID: tagName,
+		});
+	}
 
-	return ctx.reply(`👋 Welcome, ${display1}!\n\nAccount ID\n${accountId}\nDevice ID\n${deviceId}\nSecret\n${secret}`,
+	// Gets saved accounts
+	const exists = await deviceauth1.findOne({
+		authorID: tagName,
+	});
+
+	const newData2 = new deviceauth({
+		authorID: tagName,
+		accountId: exists.accountId,
+		deviceId: exists.deviceId,
+		secret: exists.secret,
+	});
+	await newData2.save();
+
+	const auth = new Auth();
+
+	const token = await auth.login(null, tagName);
+	console.log(token.access_token);
+
+	ctx.reply(`👋 Welcome, ${token.displayName}!\n\nAccount ID\n${token.account_id}`,
 		Markup.inlineKeyboard([
-			Markup.callbackButton('➡️ Claim Daily', 'DAILY'),
+			Markup.callbackButton("➡️ Get Account Info", "ACCINFO"),
 		]).extra(),
 	);
-})
-	.catch(err => console.log(err));
 
-app.action('DAILY', async ctx => {
+	if(token.displayName !== exists.displayName) {
+		await deviceauth1.findOneAndDelete({
+			authorID: tagName,
+		});
+
+		const newData = new deviceauth1({
+			authorID: tagName,
+			accountId: exists.accountId,
+			deviceId: exists.deviceId,
+			secret: exists.secret,
+			displayname: token.displayName,
+		});
+		await newData.save();
+	}
+});
+
+app.action("acc2", async ctx => {
+	const tagName = ctx.from.id;
+
+	// Fetches current logged in account
+	const exist = await deviceauth.findOne({
+		authorID: tagName,
+	});
+
+	if (exist) {
+		await deviceauth.findOneAndDelete({
+			authorID: tagName,
+		});
+	}
+
+	// Gets saved accounts
+	const exists = await deviceauth2.findOne({
+		authorID: tagName,
+	});
+
+	const newData2 = new deviceauth({
+		authorID: tagName,
+		accountId: exists.accountId,
+		deviceId: exists.deviceId,
+		secret: exists.secret,
+	});
+	await newData2.save();
 
 	const auth = new Auth();
 
-	const token = await auth.login(null, '');
-	console.log(token);
+	const token = await auth.login(null, tagName);
+	console.log(token.access_token);
 
-	const { accountId } = require('./libs/deviceAuthDetails.json');
+	ctx.reply(`👋 Welcome, ${token.displayName}!\n\nAccount ID\n${token.account_id}`,
+		Markup.inlineKeyboard([
+			Markup.callbackButton("➡️ Get Account Info", "ACCINFO"),
+		]).extra(),
+	);
 
-	const response = await axios.post(`${Endpoints.PUBLIC_BASE_URL}/game/v2/profile/${accountId}/client/ClaimLoginReward?profileId=campaign&rvn=-1`, {}, { headers: {
-		'Content-Type': 'application/json',
-		'Authorization': `Bearer ${token}`,
-	} }).catch((err) => {
-		console.error(err);
+	if(token.displayName !== exists.displayName) {
+		await deviceauth2.findOneAndDelete({
+			authorID: tagName,
+		});
+
+		const newData = new deviceauth2({
+			authorID: tagName,
+			accountId: exists.accountId,
+			deviceId: exists.deviceId,
+			secret: exists.secret,
+			displayname: token.displayName,
+		});
+		await newData.save();
+	}
+});
+
+app.action("acc3", async ctx => {
+	const tagName = ctx.from.id;
+
+	// Fetches current logged in account
+	const exist = await deviceauth.findOne({
+		authorID: tagName,
 	});
-	const notification = response.data.notifications[0];
-	const items = notification.items;
 
-	if (items.length === 0) {
-		return ctx.editMessageText(`❎ You have already claimed today's reward!\nDays logged in: **${notification.daysLoggedIn}**`);
+	if (exist) {
+		await deviceauth.findOneAndDelete({
+			authorID: tagName,
+		});
 	}
-	return ctx.editMessageText(`✅ Successfully Claimed Daily Reward!\nDays logged in: **${notification.daysLoggedIn}**\nClaimed: `` + JSON.stringify(items, null, 4) + `);
+
+	// Gets saved accounts
+	const exists = await deviceauth3.findOne({
+		authorID: tagName,
+	});
+
+	const newData2 = new deviceauth({
+		authorID: tagName,
+		accountId: exists.accountId,
+		deviceId: exists.deviceId,
+		secret: exists.secret,
+	});
+	await newData2.save();
+
+	const auth = new Auth();
+
+	const token = await auth.login(null, tagName);
+	console.log(token.access_token);
+
+	ctx.reply(`👋 Welcome, ${token.displayName}!\n\nAccount ID\n${token.account_id}`,
+		Markup.inlineKeyboard([
+			Markup.callbackButton("➡️ Get Account Info", "ACCINFO"),
+		]).extra(),
+	);
+
+	if(token.displayName !== exists.displayName) {
+		await deviceauth3.findOneAndDelete({
+			authorID: tagName,
+		});
+
+		const newData = new deviceauth3({
+			authorID: tagName,
+			accountId: exists.accountId,
+			deviceId: exists.deviceId,
+			secret: exists.secret,
+			displayname: token.displayName,
+		});
+		await newData.save();
+	}
 });
 
-app.on('callback_query', ctx => {
-	const subreddit = ctx.update.callback_query.data;
-	const userId = ctx.update.callback_query.from.id;
+app.action("acc4", async ctx => {
+	const tagName = ctx.from.id;
 
-	let type;
-	let index;
-	try {
-		type = state[userId].command ? state[userId].command : 'top';
-		index = state[userId].index;
+	// Fetches current logged in account
+	const exist = await deviceauth.findOne({
+		authorID: tagName,
+	});
+
+	if (exist) {
+		await deviceauth.findOneAndDelete({
+			authorID: tagName,
+		});
 	}
-	catch (err) {
-		return ctx.reply('Send a subreddit name.');
+
+	// Gets saved accounts
+	const exists = await deviceauth4.findOne({
+		authorID: tagName,
+	});
+
+	const newData2 = new deviceauth({
+		authorID: tagName,
+		accountId: exists.accountId,
+		deviceId: exists.deviceId,
+		secret: exists.secret,
+	});
+	await newData2.save();
+
+	const auth = new Auth();
+
+	const token = await auth.login(null, tagName);
+	console.log(token.access_token);
+
+	ctx.reply(`👋 Welcome, ${token.displayName}!\n\nAccount ID\n${token.account_id}`,
+		Markup.inlineKeyboard([
+			Markup.callbackButton("➡️ Get Account Info", "ACCINFO"),
+		]).extra(),
+	);
+
+	if(token.displayName !== exists.displayName) {
+		await deviceauth4.findOneAndDelete({
+			authorID: tagName,
+		});
+
+		const newData = new deviceauth4({
+			authorID: tagName,
+			accountId: exists.accountId,
+			deviceId: exists.deviceId,
+			secret: exists.secret,
+			displayname: token.displayName,
+		});
+		await newData.save();
 	}
-
-	axios.get(`https://reddit.com/r/${subreddit}/${type}.json?limit=10`)
-		.then(res => {
-			const data = res.data.data;
-			if (!data.children[index + 1]) {return ctx.reply('No more posts!');}
-
-			const link = `https://reddit.com/${data.children[index + 1].data.permalink}`;
-			state[userId].index = state[userId].index + 1;
-			return ctx.reply(link,
-				Markup.inlineKeyboard([
-					Markup.callbackButton('➡️ Next', subreddit),
-				]).extra(),
-			);
-		})
-		.catch(err => console.log(err));
 });
 
-app.startPolling();
+app.action("acc5", async ctx => {
+	const tagName = ctx.from.id;
+
+	// Fetches current logged in account
+	const exist = await deviceauth.findOne({
+		authorID: tagName,
+	});
+
+	if (exist) {
+		await deviceauth.findOneAndDelete({
+			authorID: tagName,
+		});
+	}
+
+	// Gets saved accounts
+	const exists = await deviceauth5.findOne({
+		authorID: tagName,
+	});
+
+	const newData2 = new deviceauth({
+		authorID: tagName,
+		accountId: exists.accountId,
+		deviceId: exists.deviceId,
+		secret: exists.secret,
+	});
+	await newData2.save();
+
+	const auth = new Auth();
+
+	const token = await auth.login(null, tagName);
+	console.log(token.access_token);
+
+	ctx.reply(`👋 Welcome, ${token.displayName}!\n\nAccount ID\n${token.account_id}`,
+		Markup.inlineKeyboard([
+			Markup.callbackButton("➡️ Get Account Info", "ACCINFO"),
+		]).extra(),
+	);
+
+	if(token.displayName !== exists.displayName) {
+		await deviceauth5.findOneAndDelete({
+			authorID: tagName,
+		});
+
+		const newData = new deviceauth5({
+			authorID: tagName,
+			accountId: exists.accountId,
+			deviceId: exists.deviceId,
+			secret: exists.secret,
+			displayname: token.displayName,
+		});
+		await newData.save();
+	}
+});
+
+app.telegram.getMe().then((bot_informations) => {
+	mongoose.connect(process.env.MONGO, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+		console.log("Connected to the MongoDB Database.");
+	}).catch((err) => {
+		console.log("Unable to connect to the MongoDB Database. Error:" + err);
+	});
+	app.options.username = bot_informations.username;
+	console.log("Server has initialized bot nickname. Nick: " + bot_informations.username);
+});
+
+app.launch();
