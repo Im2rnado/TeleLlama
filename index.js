@@ -2,35 +2,51 @@
 
 // Resources
 require("dotenv").config();
-const Auth = require("./libs/auth");
+const Collection = require("@discordjs/collection");
 const Endpoints = require("./utils/endpoints");
 
 // Modules
 const axios = require("axios").default;
 const mongoose = require("mongoose");
-const moment = require("moment");
 const fs = require("fs");
 const Telegraf = require("telegraf");
 const { Markup } = require("telegraf");
 const app = new Telegraf(process.env.BOT_TOKEN);
+const sessions = new Collection();
+const awaitReply = new Collection();
 
 // Database
 const premUsers = require("./models/premium.js"),
-	deviceauth = require("./models/deviceauth.js"),
-	deviceauth1 = require("./models/deviceauth1.js"),
-	deviceauth2 = require("./models/deviceauth2.js"),
-	deviceauth3 = require("./models/deviceauth3.js"),
-	deviceauth4 = require("./models/deviceauth4.js"),
-	deviceauth5 = require("./models/deviceauth5.js");
+	codes = require("./models/activation.js");
 
 fs.readdirSync(`${__dirname}/commands/`).forEach(file => {
 	const command = require(`${__dirname}/commands/${file}`);
 
 	if (command.name) {
 		app.command(command.name, ctx => {
-			command.execute(ctx);
+			command.execute(ctx, sessions, awaitReply);
 		});
 	}
+});
+
+fs.readdirSync(`${__dirname}/actions/`).forEach(file => {
+	const command = require(`${__dirname}/commands/${file}`);
+
+	if (command.name) {
+		app.action(command.name, ctx => {
+			command.execute(ctx, sessions, awaitReply);
+		});
+	}
+});
+
+app.telegram.getMe().then(async (bot_informations) => {
+	await mongoose.connect(process.env.MONGO, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+		console.log("Connected to the MongoDB Database.");
+	}).catch((err) => {
+		console.log("Unable to connect to the MongoDB Database. Error:" + err);
+	});
+	app.options.username = bot_informations.username;
+	console.log("Server has initialized bot nickname. Nick: " + bot_informations.username);
 });
 
 app.hears("hi", async (ctx) => {
@@ -44,318 +60,114 @@ app.hears("hi", async (ctx) => {
 	ctx.reply("Hey!");
 });
 
-app.action("ACCINFO", async ctx => {
+app.on("text", async (ctx) => {
+	console.log("Received msg");
 	const tagName = ctx.from.id;
 
-	const auth = new Auth();
+	const what = awaitReply.get(tagName);
 
-	const token = await auth.login(null, tagName);
-	console.log(token.access_token);
-	const accountId = token.account_id;
+	if (what == "activate") {
+		console.log(ctx.message.text);
+		const works = await codes.findOne({
+			ID: ctx.message.text,
+		});
+		if (!works) {
+			return ctx.reply("❌ This code does not exist!");
+		}
 
-	const response = await axios.get(`${Endpoints.DEVICE_AUTH}/${accountId}`, { headers: {
-		"Content-Type": "application/json",
-		"Authorization": `Bearer ${token.access_token}`,
-	} }).catch((err) => {
-		console.error(err);
-		return ctx.reply(`An error has occured: ${err.response.data.errorMessage}`);
-	});
+		await codes.findOneAndDelete({
+			ID: ctx.message.text,
+		});
 
-	const id = response.data.id;
-	const displayname = response.data.displayName;
-	const fname = response.data.name;
-	const email = response.data.email;
-	const lastlogin = response.data.lastLogin;
-	const dischanges = response.data.numberOfDisplayNameChanges;
-	const country = response.data.country;
-	const lname = response.data.lastName;
-	const pnumber = response.data.phoneNumber;
-	const canupdaten = response.data.canUpdateDisplayName;
-	const canupdatenext = response.data.canUpdateDisplayNameNext;
-	const tfa = response.data.tfaEnabled;
-	const ever = response.data.emailVerified;
+		const newData = new premUsers({
+			ID: tagName,
+		});
+		newData.save();
 
-	return ctx.reply(`*${displayname}*'s Info\n\n*Account ID*: ${id}\n*Real Name*: ${fname} ${lname}\n*Email*: ${email}\n*Phone Number*: ${!pnumber ? "No Phone Number" : pnumber}\n*Account Country*: ${country}\n*Last Login*: ${moment.utc(lastlogin).format("dddd, MMMM Do YYYY, HH:mm")}\n*Display Name Changes*: ${dischanges}\n*Can update Display Name*? ${!canupdaten == true ? `${canupdaten}, ${moment.utc(canupdatenext).format("dddd, MMMM Do YYYY, HH:mm:ss")}` : canupdaten }\n*Email Verified*? ${ever}\n*2FA On*? ${tfa}`, { parse_mode: "markdown" });
-});
+		ctx.reply("✅ Successfully Activated Premium!");
+		awaitReply.delete(tagName);
+	}
+	else if (what == "buy") {
+		console.log(ctx.message.text);
+		const works = await sessions.get(tagName);
+		if (!works) {
+			return ctx.reply("❌ You are not logged in!");
+		}
 
-app.action("acc1", async ctx => {
-	const tagName = ctx.from.id;
+		const cosmetics = await axios.get("https://api.carbidebot.com/shop/combined");
 
-	// Fetches current logged in account
-	const exist = await deviceauth.findOne({
-		authorID: tagName,
-	});
+		const featured = cosmetics.data.br;
 
-	if (exist) {
-		await deviceauth.findOneAndDelete({
-			authorID: tagName,
+		let item = featured.find(i => i.name.toLowerCase() === ctx.message.text.toLowerCase());
+		if (!isNaN(ctx.message.text) && !item) {
+			const number = ctx.message.text - 1;
+			item = featured[number];
+		}
+		if (item) {
+			sessions.set(`${tagName}-buy`, item);
+			ctx.reply("Are you sure you would like to purchase this item?",
+				Markup.inlineKeyboard([Markup.callbackButton("Yes, continue", "purchase")]).extra(),
+			);
+		}
+		else {
+			return ctx.reply(`❌ *Item Not Found!*\n\nIt looks like there isn't any item with the name *${ctx.message.text}*\nUse /shop to get today's Item Shop.`, { parse_mode: "markdown" });
+		}
+	}
+	else if (what == "platform") {
+		console.log(ctx.message.text);
+		const works = await sessions.get(tagName);
+		if (!works) {
+			return ctx.reply("❌ You are not logged in!");
+		}
+
+		const platform = [
+			"WeGame",
+			"EpicPCKorea",
+			"Epic",
+			"EpicPC",
+			"EpicAndroid",
+			"PSN",
+			"Live",
+			"IOSAppStore",
+			"Nintendo",
+			"Samsung",
+			"Shared",
+		];
+
+		const platforms = {
+			wegame: "WeGame",
+			epicpckorea: "EpicPCKorea",
+			epic: "Epic",
+			epicpc: "EpicPC",
+			epicandroid: "EpicAndroid",
+			psn: "PSN",
+			live: "Live",
+			iosappstore: "IOSAppStore",
+			nintendo: "Nintendo",
+			samsung: "Samsung",
+			shared: "Shared",
+		};
+
+		if (!(ctx.message.text.toLowerCase() === "wegame" || ctx.message.text.toLowerCase() === "epicpckorea" || ctx.message.text.toLowerCase() === "epic" || ctx.message.text.toLowerCase() === "epicpc" || ctx.message.text.toLowerCase() === "epicandroid" || ctx.message.text.toLowerCase() === "psn" || ctx.message.text.toLowerCase() === "live" || ctx.message.text.toLowerCase() === "iosappstore" || ctx.message.text.toLowerCase() === "nintendo" || ctx.message.text.toLowerCase() === "samsung" || ctx.message.text.toLowerCase() === "shared")) {
+			return ctx.reply(`❌ Wrong Usage\n\n*Valid Platforms*: ${platform.join(" - ")}`, { parse_mode: "markdown" });
+		}
+
+		await axios.post(`${Endpoints.PUBLIC_BASE_URL}/game/v2/profile/${works.account_id}/client/SetMtxPlatform?profileId=common_core`, {
+			"newPlatform": platforms[ctx.message.text.toLowerCase()],
+		}, { headers: {
+			"Content-Type": "application/json",
+			"Authorization": `Bearer ${works.access_token}`,
+		} }).then((response) => {
+			console.log(response.data);
+
+			ctx.reply(`✅ Successfully changed V-Bucks Platform to *${platforms[ctx.message.text.toLowerCase()]}*\n\nUse /vbucks to see your V-Bucks`, { parse_mode: "markdown" });
+			awaitReply.delete(tagName);
+		}).catch((err) => {
+			console.error(err);
+			awaitReply.delete(tagName);
+			return ctx.reply(`An error has occured: ${err.response.data.errorMessage}`);
 		});
 	}
-
-	// Gets saved accounts
-	const exists = await deviceauth1.findOne({
-		authorID: tagName,
-	});
-
-	const newData2 = new deviceauth({
-		authorID: tagName,
-		accountId: exists.accountId,
-		deviceId: exists.deviceId,
-		secret: exists.secret,
-	});
-	await newData2.save();
-
-	const auth = new Auth();
-
-	const token = await auth.login(null, tagName);
-	console.log(token.access_token);
-
-	ctx.reply(`👋 Welcome, ${token.displayName}!\n\nAccount ID\n${token.account_id}`,
-		Markup.inlineKeyboard([
-			Markup.callbackButton("➡️ Get Account Info", "ACCINFO"),
-		]).extra(),
-	);
-
-	if(token.displayName !== exists.displayName) {
-		await deviceauth1.findOneAndDelete({
-			authorID: tagName,
-		});
-
-		const newData = new deviceauth1({
-			authorID: tagName,
-			accountId: exists.accountId,
-			deviceId: exists.deviceId,
-			secret: exists.secret,
-			displayname: token.displayName,
-		});
-		await newData.save();
-	}
-});
-
-app.action("acc2", async ctx => {
-	const tagName = ctx.from.id;
-
-	// Fetches current logged in account
-	const exist = await deviceauth.findOne({
-		authorID: tagName,
-	});
-
-	if (exist) {
-		await deviceauth.findOneAndDelete({
-			authorID: tagName,
-		});
-	}
-
-	// Gets saved accounts
-	const exists = await deviceauth2.findOne({
-		authorID: tagName,
-	});
-
-	const newData2 = new deviceauth({
-		authorID: tagName,
-		accountId: exists.accountId,
-		deviceId: exists.deviceId,
-		secret: exists.secret,
-	});
-	await newData2.save();
-
-	const auth = new Auth();
-
-	const token = await auth.login(null, tagName);
-	console.log(token.access_token);
-
-	ctx.reply(`👋 Welcome, ${token.displayName}!\n\nAccount ID\n${token.account_id}`,
-		Markup.inlineKeyboard([
-			Markup.callbackButton("➡️ Get Account Info", "ACCINFO"),
-		]).extra(),
-	);
-
-	if(token.displayName !== exists.displayName) {
-		await deviceauth2.findOneAndDelete({
-			authorID: tagName,
-		});
-
-		const newData = new deviceauth2({
-			authorID: tagName,
-			accountId: exists.accountId,
-			deviceId: exists.deviceId,
-			secret: exists.secret,
-			displayname: token.displayName,
-		});
-		await newData.save();
-	}
-});
-
-app.action("acc3", async ctx => {
-	const tagName = ctx.from.id;
-
-	// Fetches current logged in account
-	const exist = await deviceauth.findOne({
-		authorID: tagName,
-	});
-
-	if (exist) {
-		await deviceauth.findOneAndDelete({
-			authorID: tagName,
-		});
-	}
-
-	// Gets saved accounts
-	const exists = await deviceauth3.findOne({
-		authorID: tagName,
-	});
-
-	const newData2 = new deviceauth({
-		authorID: tagName,
-		accountId: exists.accountId,
-		deviceId: exists.deviceId,
-		secret: exists.secret,
-	});
-	await newData2.save();
-
-	const auth = new Auth();
-
-	const token = await auth.login(null, tagName);
-	console.log(token.access_token);
-
-	ctx.reply(`👋 Welcome, ${token.displayName}!\n\nAccount ID\n${token.account_id}`,
-		Markup.inlineKeyboard([
-			Markup.callbackButton("➡️ Get Account Info", "ACCINFO"),
-		]).extra(),
-	);
-
-	if(token.displayName !== exists.displayName) {
-		await deviceauth3.findOneAndDelete({
-			authorID: tagName,
-		});
-
-		const newData = new deviceauth3({
-			authorID: tagName,
-			accountId: exists.accountId,
-			deviceId: exists.deviceId,
-			secret: exists.secret,
-			displayname: token.displayName,
-		});
-		await newData.save();
-	}
-});
-
-app.action("acc4", async ctx => {
-	const tagName = ctx.from.id;
-
-	// Fetches current logged in account
-	const exist = await deviceauth.findOne({
-		authorID: tagName,
-	});
-
-	if (exist) {
-		await deviceauth.findOneAndDelete({
-			authorID: tagName,
-		});
-	}
-
-	// Gets saved accounts
-	const exists = await deviceauth4.findOne({
-		authorID: tagName,
-	});
-
-	const newData2 = new deviceauth({
-		authorID: tagName,
-		accountId: exists.accountId,
-		deviceId: exists.deviceId,
-		secret: exists.secret,
-	});
-	await newData2.save();
-
-	const auth = new Auth();
-
-	const token = await auth.login(null, tagName);
-	console.log(token.access_token);
-
-	ctx.reply(`👋 Welcome, ${token.displayName}!\n\nAccount ID\n${token.account_id}`,
-		Markup.inlineKeyboard([
-			Markup.callbackButton("➡️ Get Account Info", "ACCINFO"),
-		]).extra(),
-	);
-
-	if(token.displayName !== exists.displayName) {
-		await deviceauth4.findOneAndDelete({
-			authorID: tagName,
-		});
-
-		const newData = new deviceauth4({
-			authorID: tagName,
-			accountId: exists.accountId,
-			deviceId: exists.deviceId,
-			secret: exists.secret,
-			displayname: token.displayName,
-		});
-		await newData.save();
-	}
-});
-
-app.action("acc5", async ctx => {
-	const tagName = ctx.from.id;
-
-	// Fetches current logged in account
-	const exist = await deviceauth.findOne({
-		authorID: tagName,
-	});
-
-	if (exist) {
-		await deviceauth.findOneAndDelete({
-			authorID: tagName,
-		});
-	}
-
-	// Gets saved accounts
-	const exists = await deviceauth5.findOne({
-		authorID: tagName,
-	});
-
-	const newData2 = new deviceauth({
-		authorID: tagName,
-		accountId: exists.accountId,
-		deviceId: exists.deviceId,
-		secret: exists.secret,
-	});
-	await newData2.save();
-
-	const auth = new Auth();
-
-	const token = await auth.login(null, tagName);
-	console.log(token.access_token);
-
-	ctx.reply(`👋 Welcome, ${token.displayName}!\n\nAccount ID\n${token.account_id}`,
-		Markup.inlineKeyboard([
-			Markup.callbackButton("➡️ Get Account Info", "ACCINFO"),
-		]).extra(),
-	);
-
-	if(token.displayName !== exists.displayName) {
-		await deviceauth5.findOneAndDelete({
-			authorID: tagName,
-		});
-
-		const newData = new deviceauth5({
-			authorID: tagName,
-			accountId: exists.accountId,
-			deviceId: exists.deviceId,
-			secret: exists.secret,
-			displayname: token.displayName,
-		});
-		await newData.save();
-	}
-});
-
-app.telegram.getMe().then((bot_informations) => {
-	mongoose.connect(process.env.MONGO, { useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
-		console.log("Connected to the MongoDB Database.");
-	}).catch((err) => {
-		console.log("Unable to connect to the MongoDB Database. Error:" + err);
-	});
-	app.options.username = bot_informations.username;
-	console.log("Server has initialized bot nickname. Nick: " + bot_informations.username);
 });
 
 app.launch();

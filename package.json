@@ -14,6 +14,7 @@
   "author": "im2rnado",
   "license": "ISC",
   "dependencies": {
+    "@discordjs/collection": "^0.1.6",
     "axios": "^0.20.0",
     "axios-cookiejar-support": "^1.0.0",
     "canvas": "^2.6.1",

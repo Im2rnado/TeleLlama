@@ -3,7 +3,7 @@ const { createCanvas, loadImage, registerFont } = require("canvas");
 const fs = require("fs");
 
 module.exports = {
-	async createLocker(content) {
+	async createLocker(content, tagName) {
 
 		registerFont("./assets/fonts/BurbankBigRegularBlack.otf", { family: "Burbank Big Regular", style: "Black" });
 
@@ -91,13 +91,15 @@ module.exports = {
 				}
 				// Watermark
 				ctx.fillStyle = "#ffffff";
-				ctx.font = "italic 45px Burbank Big Rg Bk";
+				ctx.font = "italic 65px Burbank Big Rg Bk";
+				ctx.textBaseline = "middle";
+				ctx.textAlign = "center";
 				ctx.fillText("t.me/CarbideFNBot", canvas.width / 2, canvas.height / 2);
 
-				const end = fs.createWriteStream("./final/locker.png");
+				const end = fs.createWriteStream(`./final/${tagName}-locker.png`);
 				const stream = canvas.createPNGStream().pipe(end);
 				stream.on("finish", () => {
-					resolve("./final/locker.png");
+					resolve(`./final/${tagName}-locker.png`);
 				});
 
 			}).catch((err) => {
@@ -182,10 +184,17 @@ module.exports = {
 					}
 
 				}
-				const end = fs.createWriteStream("./final/locker.jpeg");
+				// Watermark
+				ctx.fillStyle = "#ffffff";
+				ctx.font = "italic 65px Burbank Big Rg Bk";
+				ctx.textBaseline = "middle";
+				ctx.textAlign = "center";
+				ctx.fillText("t.me/CarbideFNBot", canvas.width / 2, canvas.height / 2);
+
+				const end = fs.createWriteStream(`./final/${tagName}-locker.jpeg`);
 				const stream = canvas.createStream().pipe(end);
 				stream.on("finish", () => {
-					resolve("./final/locker.jpeg");
+					resolve(`./final/${tagName}-locker.jpeg`);
 				});
 
 			}).catch((err) => {

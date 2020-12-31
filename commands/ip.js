@@ -13,51 +13,55 @@ const premUsers = require("../models/premium.js");
 
 module.exports = {
 	name: "ip",
-	async execute(ctx) {
+	async execute(ctx, sessions) {
 
 		const tagName = ctx.from.id;
+
+		const exist = await sessions.get(tagName);
 
 		const tag = await premUsers.findOne({
 			ID: ctx.from.id,
 		});
 
-		const exist = await deviceauth.findOne({
-			authorID: tagName,
-		});
+		let token = exist;
 
-		if (exist) {
+		if (!exist) {
+			const logged = await deviceauth.findOne({
+				authorID: tagName,
+			});
+
+			if (!logged) {
+				return ctx.reply("❌ You are not logged in");
+			}
 
 			const auth = new Auth();
 
-			const token = await auth.login(null, tagName);
+			token = await auth.login(null, tagName);
 			console.log(token.access_token);
-			const accountId = token.account_id;
-
-			const response = await axios.get(`${Endpoints.DEVICE_AUTH}/${accountId}/deviceAuth`, { headers: {
-				"Content-Type": "application/json",
-				"Authorization": `Bearer ${token.access_token}`,
-			} }).catch((err) => {
-				console.error(err);
-				return ctx.reply(`An error has occured: ${err.response.data.errorMessage}`);
-			});
-
-			const keys = response.data;
-
-			const embed = [];
-
-			keys.forEach(el => {
-				embed.push(`Device ID: *${el.deviceId}*\nCreated at: *${el.created.location}*\nIP Address: *${el.created.ipAddress}*`);
-			});
-
-			if (!tag) {
-				ctx.reply(`*Logged in devices*\n\n${embed[0]}`, { parse_mode: "markdown" });
-				return ctx.reply("❌ This is just one device, to view all of them, purchase an Activation code from @im2rnado first!");
-			}
-
-			return ctx.reply(`*Logged in devices*\n\n\n${embed.join("\n\n")}`, { parse_mode: "markdown" });
+			sessions.set(tagName, token);
 		}
-		else {
-			return ctx.reply("❌ You are not logged in");
+
+		const response = await axios.get(`${Endpoints.DEVICE_AUTH}/${token.account_id}/deviceAuth`, { headers: {
+			"Content-Type": "application/json",
+			"Authorization": `Bearer ${token.access_token}`,
+		} }).catch((err) => {
+			console.error(err);
+			return ctx.reply(`An error has occured: ${err.response.data.errorMessage}`);
+		});
+
+		const keys = response.data;
+
+		const embed = [];
+
+		keys.forEach(el => {
+			embed.push(`Device ID: *${el.deviceId}*\nCreated at: *${el.created.location}*\nIP Address: *${el.created.ipAddress}*`);
+		});
+
+		if (!tag) {
+			ctx.reply(`*Logged in devices*\n\n${embed[0]}`, { parse_mode: "markdown" });
+			return ctx.reply("❌ This is just one device, to view all of them, purchase an Activation code from @im2rnado first!");
 		}
+
+		return ctx.reply(`*Logged in devices*\n\n\n${embed.join("\n\n")}`, { parse_mode: "markdown" });
 	},
 };
