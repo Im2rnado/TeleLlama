@@ -9,6 +9,8 @@ const Endpoints = require("./utils/endpoints");
 const axios = require("axios").default;
 const mongoose = require("mongoose");
 const fs = require("fs");
+const { stringify } = require("querystring");
+const moment = require("moment");
 const Telegraf = require("telegraf");
 const { Markup } = require("telegraf");
 const app = new Telegraf(process.env.BOT_TOKEN);
@@ -30,11 +32,11 @@ fs.readdirSync(`${__dirname}/commands/`).forEach(file => {
 });
 
 fs.readdirSync(`${__dirname}/actions/`).forEach(file => {
-	const command = require(`${__dirname}/commands/${file}`);
+	const action = require(`${__dirname}/actions/${file}`);
 
-	if (command.name) {
-		app.action(command.name, ctx => {
-			command.execute(ctx, sessions, awaitReply);
+	if (action.name) {
+		app.action(action.name, ctx => {
+			action.execute(ctx, sessions, awaitReply);
 		});
 	}
 });
@@ -50,6 +52,7 @@ app.telegram.getMe().then(async (bot_informations) => {
 });
 
 app.hears("hi", async (ctx) => {
+	console.log(ctx.message.text.toUpperCase());
 	const tag = await premUsers.findOne({
 		ID: ctx.from.id,
 	});
@@ -166,6 +169,36 @@ app.on("text", async (ctx) => {
 			console.error(err);
 			awaitReply.delete(tagName);
 			return ctx.reply(`An error has occured: ${err.response.data.errorMessage}`);
+		});
+	}
+	else if (what == "name") {
+		console.log(ctx.message.text);
+		const works = await sessions.get(tagName);
+		if (!works) {
+			return ctx.reply("❌ You are not logged in!");
+		}
+
+		const response3 = await axios.post(Endpoints.OAUTH_TOKEN, stringify({ "grant_type": "token_to_token", "access_token": works.access_token }), { headers: {
+			"Content-Type": "application/x-www-form-urlencoded",
+			"Authorization": "Basic ZWZlM2NiYjkzODgwNGM3NGIyMGUxMDlkMGVmYzE1NDg6NmUzMWJkYmFlNmE0NGYyNTg0NzQ3MzNkYjc0ZjM5YmE",
+		} }).catch((err) => {
+			console.error(err);
+		});
+
+		const new_token = response3.data.access_token;
+
+		await axios.put(`https://account-public-service-prod03.ol.epicgames.com/account/api/public/account/${works.account_id}`, {
+			"displayName": ctx.message.text,
+		}, { headers: {
+			"Content-Type": "application/json",
+			"Authorization": `Bearer ${new_token}`,
+		} }).then((response) => {
+			ctx.reply(`✅ Successfully changed display name\n\n*Old Display Name*: ${works.displayName}\n*New Display Name*: ${response.data.accountInfo.displayName}\n*Number of Display Name changes*: ${response.data.accountInfo.numberOfDisplayNameChanges}\n*Can update Display Name next*: ${moment.utc(response.data.accountInfo.canUpdateDisplayNameNext).format("dddd, MMMM Do YYYY, HH:mm")}`, { parse_mode: "markdown" });
+			awaitReply.delete(tagName);
+		}).catch((err) => {
+			console.error(err);
+			awaitReply.delete(tagName);
+			return ctx.reply(`❌ *${err.response.data.errorMessage}*`, { parse_mode: "markdown" });
 		});
 	}
 });

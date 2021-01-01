@@ -21,7 +21,7 @@ module.exports = {
 		catch (e) {
 			awaitReply.delete(tagName);
 			sessions.delete(`${tagName}-buy`);
-			return ctx.reply(`❌ An error has occured: ${e}`);
+			return ctx.reply(`❌ ${e}`);
 		}
 		ctx.reply(`✅ Successfully Purchased *${item.name}*\n\n*V-Bucks Remaining*: ${h.vbucks}!`, { parse_mode: "markdown" });
 		awaitReply.delete(tagName);

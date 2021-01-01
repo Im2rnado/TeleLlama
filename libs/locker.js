@@ -96,10 +96,10 @@ module.exports = {
 				ctx.textAlign = "center";
 				ctx.fillText("t.me/CarbideFNBot", canvas.width / 2, canvas.height / 2);
 
-				const end = fs.createWriteStream(`./final/${tagName}-locker.png`);
+				const end = fs.createWriteStream(`./final/${tagName.id}-locker.png`);
 				const stream = canvas.createPNGStream().pipe(end);
 				stream.on("finish", () => {
-					resolve(`./final/${tagName}-locker.png`);
+					resolve(`./final/${tagName.id}-locker.png`);
 				});
 
 			}).catch((err) => {
@@ -191,10 +191,10 @@ module.exports = {
 				ctx.textAlign = "center";
 				ctx.fillText("t.me/CarbideFNBot", canvas.width / 2, canvas.height / 2);
 
-				const end = fs.createWriteStream(`./final/${tagName}-locker.jpeg`);
+				const end = fs.createWriteStream(`./final/${tagName.id}-locker.jpeg`);
 				const stream = canvas.createStream().pipe(end);
 				stream.on("finish", () => {
-					resolve(`./final/${tagName}-locker.jpeg`);
+					resolve(`./final/${tagName.id}-locker.jpeg`);
 				});
 
 			}).catch((err) => {

@@ -25,24 +25,22 @@ module.exports = {
 			return ctx.reply("❌ This command is not free, purchase an Activation code from @im2rnado first!");
 		}
 
-		const exist = await sessions.get(tagName);
+		const logged = await deviceauth.findOne({
+			authorID: tagName,
+		});
 
-		let token = exist;
-
-		if (!exist) {
-			const logged = await deviceauth.findOne({
-				authorID: tagName,
-			});
-
-			if (!logged) {
-				return ctx.reply("❌ You are not logged in");
-			}
-
+		if (logged) {
 			const auth = new Auth();
 
-			token = await auth.login(null, tagName);
-			console.log(token.access_token);
-			sessions.set(tagName, token);
+			const onfo = await auth.login(null, tagName);
+			console.log(onfo.access_token);
+			sessions.set(tagName, onfo);
+		}
+
+		const token = await sessions.get(tagName);
+
+		if (!token) {
+			return ctx.reply("❌ You are not logged in");
 		}
 
 		await axios.post(`${Endpoints.PUBLIC_BASE_URL}/game/v2/profile/${token.account_id}/client/ClaimMfaEnabled?profileId=common_core`, {

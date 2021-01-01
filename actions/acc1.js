@@ -1,5 +1,5 @@
-const deviceauth = require("./models/deviceauth.js"),
-	deviceauth1 = require("./models/deviceauth1.js");
+const deviceauth = require("../models/deviceauth.js"),
+	deviceauth1 = require("../models/deviceauth1.js");
 
 const { Markup } = require("telegraf");
 const Auth = require("../libs/auth");

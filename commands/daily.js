@@ -16,24 +16,22 @@ module.exports = {
 
 		const tagName = ctx.from.id;
 
-		const exist = await sessions.get(tagName);
+		const logged = await deviceauth.findOne({
+			authorID: tagName,
+		});
 
-		let token = exist;
-
-		if (!exist) {
-			const logged = await deviceauth.findOne({
-				authorID: tagName,
-			});
-
-			if (!logged) {
-				return ctx.reply("❌ You are not logged in");
-			}
-
+		if (logged) {
 			const auth = new Auth();
 
-			token = await auth.login(null, tagName);
-			console.log(token.access_token);
-			sessions.set(tagName, token);
+			const onfo = await auth.login(null, tagName);
+			console.log(onfo.access_token);
+			sessions.set(tagName, onfo);
+		}
+
+		const token = await sessions.get(tagName);
+
+		if (!token) {
+			return ctx.reply("❌ You are not logged in");
 		}
 
 		const response = await axios.post(`${Endpoints.PUBLIC_BASE_URL}/game/v2/profile/${token.account_id}/client/ClaimLoginReward?profileId=campaign&rvn=-1`, {}, { headers: {

@@ -7,7 +7,7 @@ const Auth = require("../libs/auth");
 const deviceauth = require("../models/deviceauth.js");
 
 module.exports = {
-	name: "buy",
+	name: "displayname",
 	async execute(ctx, sessions, awaitReply) {
 
 		const tagName = ctx.from.id;
@@ -36,9 +36,9 @@ module.exports = {
 			awaitReply.delete(tagName);
 		}
 
-		awaitReply.set(tagName, "buy");
+		awaitReply.set(tagName, "name");
 
-		ctx.reply("Please reply with the item name you want to purchase within 5 minutes");
+		ctx.reply("Please reply with the new display name you would like to set within 5 minutes");
 		setTimeout(stopInterval, 300000);
 
 		function stopInterval() {

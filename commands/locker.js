@@ -18,24 +18,22 @@ module.exports = {
 
 		const tagName = ctx.from.id;
 
-		const exist = await sessions.get(tagName);
+		const logged = await deviceauth.findOne({
+			authorID: tagName,
+		});
 
-		let token = exist;
-
-		if (!exist) {
-			const logged = await deviceauth.findOne({
-				authorID: tagName,
-			});
-
-			if (!logged) {
-				return ctx.reply("❌ You are not logged in");
-			}
-
+		if (logged) {
 			const auth = new Auth();
 
-			token = await auth.login(null, tagName);
-			console.log(token.access_token);
-			sessions.set(tagName, token);
+			const onfo = await auth.login(null, tagName);
+			console.log(onfo.access_token);
+			sessions.set(tagName, onfo);
+		}
+
+		const token = await sessions.get(tagName);
+
+		if (!token) {
+			return ctx.reply("❌ You are not logged in");
 		}
 
 		const response = await axios.post(`${Endpoints.PUBLIC_BASE_URL}/game/v2/profile/${token.account_id}/client/QueryProfile?profileId=athena`, {}, { headers: {
@@ -111,7 +109,7 @@ module.exports = {
 		// Skins
 		ctx.reply(`Rendering *${parseds.length}* skins. This may take a while ...`, { parse_mode: "markdown" });
 		const parsedss = await Sort(parseds);
-		await createLocker(parsedss, tagName);
+		await createLocker(parsedss, ctx.from);
 		console.log("Created Skins Image");
 		if (fs.existsSync(`./final/${tagName}-locker.png`)) path = `./final/${tagName}-locker.png`;
 		else path = `./final/${tagName}-locker.jpeg`;
@@ -121,7 +119,7 @@ module.exports = {
 		// Emotes
 		ctx.reply(`Rendering *${parsede.length}* emotes. This may take a while ...`, { parse_mode: "markdown" });
 		const parsedee = await Sort(parsede);
-		await createLocker(parsedee, tagName);
+		await createLocker(parsedee, ctx.from);
 		console.log("Created Emotes Image");
 		if (fs.existsSync(`./final/${tagName}-locker.png`)) path = "./final/locker.png";
 		else path = `./final/${tagName}-locker.jpeg`;
@@ -131,7 +129,7 @@ module.exports = {
 		// Pickaxes
 		ctx.reply(`Rendering *${parsedp.length}* pickaxes. This may take a while ...`, { parse_mode: "markdown" });
 		const parsedpp = await Sort(parsedp);
-		await createLocker(parsedpp, tagName);
+		await createLocker(parsedpp, ctx.from);
 		console.log("Created Pickaxes Image");
 		if (fs.existsSync(`./final/${tagName}-locker.png`)) path = `./final/${tagName}-locker.png`;
 		else path = `./final/${tagName}-locker.jpeg`;
@@ -141,7 +139,7 @@ module.exports = {
 		// Gliders
 		ctx.reply(`Rendering *${parsedg.length}* gliders. This may take a while ...`, { parse_mode: "markdown" });
 		const parsedgg = await Sort(parsedg);
-		await createLocker(parsedgg, tagName);
+		await createLocker(parsedgg, ctx.from);
 		console.log("Created Gliders Image");
 		if (fs.existsSync(`./final/${tagName}-locker.png`)) path = `./final/${tagName}-locker.png`;
 		else path = `./final/${tagName}-locker.jpeg`;
