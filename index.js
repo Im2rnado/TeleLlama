@@ -4,6 +4,7 @@
 require("dotenv").config();
 const Collection = require("@discordjs/collection");
 const Endpoints = require("./utils/endpoints");
+const fortniteShop = require("./libs/fortniteShop");
 
 // Modules
 const axios = require("axios").default;
@@ -47,6 +48,7 @@ app.telegram.getMe().then(async (bot_informations) => {
 	}).catch((err) => {
 		console.log("Unable to connect to the MongoDB Database. Error:" + err);
 	});
+	fortniteShop.init();
 	app.options.username = bot_informations.username;
 	console.log("Server has initialized bot nickname. Nick: " + bot_informations.username);
 });
