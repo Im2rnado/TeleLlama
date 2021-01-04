@@ -208,11 +208,8 @@ module.exports = {
 				const logo = await loadImage("https://cdn.discordapp.com/attachments/783811812029628456/793573795792158730/image2.png");
 				ctx.drawImage(logo, canvas.width - 1200, canvas.height - 310, 250, 250);
 
-				const end = fs.createWriteStream(`./final/${tagName.id}-locker.jpeg`);
-				const stream = canvas.createStream().pipe(end);
-				stream.on("finish", () => {
-					resolve(`./final/${tagName.id}-locker.jpeg`);
-				});
+				const buf = await canvas.toBuffer("image/jpeg");
+				await resolve(fs.writeFileSync(`./final/${tagName.id}-locker.jpeg`, buf));
 
 			}).catch((err) => {
 				console.error(err);
