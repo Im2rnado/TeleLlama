@@ -68,6 +68,7 @@ module.exports = {
 				}
 			}
 		}
+
 		let level = info.data.profileChanges[0].profile.stats.attributes.level;
 		const xp = info.data.profileChanges[0].profile.stats.attributes.xp;
 		const acclevel = info.data.profileChanges[0].profile.stats.attributes.accountLevel;

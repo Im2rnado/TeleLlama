@@ -41,7 +41,16 @@ module.exports = {
 			authorID: tagName,
 		});
 
+		// If 5 saved accounts
+		if (exists5) return ctx.reply("❌ You already have 5 saved accounts!");
+
 		if (exist) {
+
+			if (exists && exist.account_id == exists.accountId) return ctx.reply("❌ You can't save the same account twice!");
+			else if (exists2 && exist.account_id == exists2.accountId) return ctx.reply("❌ You can't save the same account twice!");
+			else if (exists3 && exist.account_id == exists3.accountId) return ctx.reply("❌ You can't save the same account twice!");
+			else if (exists4 && exist.account_id == exists4.accountId) return ctx.reply("❌ You can't save the same account twice!");
+			else if (exists5 && exist.account_id == exists5.accountId) return ctx.reply("❌ You can't save the same account twice!");
 
 			const token = exist;
 			let hexchangeCode;
@@ -84,7 +93,7 @@ module.exports = {
 			const accountId = token.account_id;
 			const display1 = token.displayName;
 
-			ctx.reply(`👋 Welcome, ${display1}!\n\nAccount ID\n${accountId}`,
+			ctx.reply(`👋 Saved ${display1}!\n\nAccount ID\n${accountId}`,
 				Markup.inlineKeyboard([
 					Markup.callbackButton("➡️ Get Account Info", "ACCINFO"),
 				]).extra(),

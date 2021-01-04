@@ -13,7 +13,7 @@ const deviceauth = require("../models/deviceauth.js"),
 
 module.exports = {
 	name: "choose",
-	async execute(ctx, sessions) {
+	async execute(ctx) {
 
 		const tagName = ctx.from.id;
 
@@ -57,7 +57,5 @@ module.exports = {
 		ctx.reply(`${accounts.length ? "Please choose an account from below" : "You do not have any saved accounts"}`,
 			Markup.inlineKeyboard(accounts).extra(),
 		);
-
-		sessions.delete(tagName);
 	},
 };

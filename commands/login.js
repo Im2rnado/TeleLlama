@@ -49,9 +49,6 @@ module.exports = {
 			authorID: tagName,
 		});
 
-		// If 5 saved accounts
-		if (exists5) return ctx.reply("❌ You already have 5 saved accounts!");
-
 		// Generate Device Code
 		console.log("[AUTH]", "Requesting Access Token");
 		const access_token = await axios.post("https://account-public-service-prod03.ol.epicgames.com/account/api/oauth/token", stringify({ token_type: "eg1", grant_type: "client_credentials" }), { headers: {
@@ -100,11 +97,11 @@ module.exports = {
 				console.log(token);
 				clearInterval(b);
 
-				if (exists && token.data.account_id == exists.accountId) return ctx.reply("❌ You can't save the same account twice!");
-				else if (exists2 && token.data.account_id == exists2.accountId) return ctx.reply("❌ You can't save the same account twice!");
-				else if (exists3 && token.data.account_id == exists3.accountId) return ctx.reply("❌ You can't save the same account twice!");
-				else if (exists4 && token.data.account_id == exists4.accountId) return ctx.reply("❌ You can't save the same account twice!");
-				else if (exists5 && token.data.account_id == exists5.accountId) return ctx.reply("❌ You can't save the same account twice!");
+				if (exists && token.data.account_id == exists.accountId) return ctx.reply("❌ You can't login to the same account twice!");
+				else if (exists2 && token.data.account_id == exists2.accountId) return ctx.reply("❌ You can't login to the same account twice!");
+				else if (exists3 && token.data.account_id == exists3.accountId) return ctx.reply("❌ You can't login to the same account twice!");
+				else if (exists4 && token.data.account_id == exists4.accountId) return ctx.reply("❌ You can't login to the same account twice!");
+				else if (exists5 && token.data.account_id == exists5.accountId) return ctx.reply("❌ You can't login to the same account twice!");
 
 				const accountId = token.data.account_id;
 				const display1 = token.data.displayName;
@@ -116,12 +113,11 @@ module.exports = {
 				);
 
 				sessions.set(tagName, token.data);
-				setTimeout(deletes, 28800000);
+				setTimeout(async function() {
+					await sessions.delete(tagName);
+				}, 28800000);
 				return console.log("Logged in");
 			}
-		}
-		async function deletes() {
-			await sessions.delete(tagName);
 		}
 	},
 };
