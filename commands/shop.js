@@ -10,9 +10,9 @@ module.exports = {
 	async execute(ctx) {
 
 
-		fs.stat("./src/final/shop.png", async function(err) {
+		fs.stat("./final/shop.png", async function(err) {
 			if(!err) {
-				await ctx.replyWithPhoto({ source: "./src/final/shop.png" }, { caption: `**🛒 Fortnite Item Shop | ${date}**` });
+				await ctx.replyWithPhoto({ source: "./final/shop.png" }, { caption: `**🛒 Fortnite Item Shop | ${date}**` });
 			}
 			else {
 				const response2 = await axios.get("https://api.carbidebot.com/shop/br/combined", { headers: {
@@ -26,9 +26,9 @@ module.exports = {
 
 				let path;
 
-				if (fs.existsSync("./src/final/shop.png")) path = "./src/final/shop.png";
+				if (fs.existsSync("./final/shop.png")) path = "./final/shop.png";
 
-				await ctx.replyWithPhoto({ source: path }, { caption: `**🛒 Fortnite Item Shop | ${date}**` });
+				await ctx.replyWithPhoto({ source: path }, { caption: `🛒 Fortnite Item Shop | ${date}` });
 			}
 		});
 	},

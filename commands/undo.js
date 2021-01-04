@@ -53,7 +53,7 @@ module.exports = {
 			"Authorization": `Bearer ${token.access_token}`,
 		} }).then((respons) => {
 			console.log(respons);
-			ctx.reply(`✅ Undoing Last Purchase was Successful\n\nRefunded: *${itemid.split(":")[1]}*`);
+			ctx.reply(`✅ Undoing Last Purchase was Successful\n\nRefunded: *${itemid.split(":")[1]}*`, { parse_mode: "markdown" });
 		}).catch((err) => {
 			console.error(err);
 			return ctx.reply("❌ Could not undo last purchase");

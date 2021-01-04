@@ -5,7 +5,7 @@ const Auth = require("../libs/auth");
 const deviceauth = require("../models/deviceauth.js");
 
 module.exports = {
-	name: "undo",
+	name: "platform",
 	async execute(ctx, sessions, awaitReply) {
 
 		const tagName = ctx.from.id;

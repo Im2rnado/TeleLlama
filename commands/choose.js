@@ -54,7 +54,7 @@ module.exports = {
 		if (exists5) accounts.push(Markup.callbackButton(exists5.displayname, "acc5"));
 
 		// Send the link
-		ctx.reply(`${accounts.length ? "Please choose an account from below" : "You are not logged in"}`,
+		ctx.reply(`${accounts.length ? "Please choose an account from below" : "You do not have any saved accounts"}`,
 			Markup.inlineKeyboard(accounts).extra(),
 		);
 

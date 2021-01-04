@@ -17,7 +17,7 @@ const deviceauth1 = require("../models/deviceauth1.js"),
 	deviceauth5 = require("../models/deviceauth5.js");
 
 module.exports = {
-	name: "saves",
+	name: "save",
 	async execute(ctx, sessions) {
 
 		const tagName = ctx.from.id;

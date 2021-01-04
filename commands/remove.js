@@ -9,7 +9,7 @@ const Endpoints = require("../utils/endpoints");
 const Auth = require("../libs/auth");
 
 module.exports = {
-	name: "receipts",
+	name: "remove",
 	async execute(ctx, sessions) {
 
 		const tagName = ctx.from.id;

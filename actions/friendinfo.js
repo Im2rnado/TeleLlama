@@ -66,6 +66,6 @@ module.exports = {
 		if (compareDatesBoolean) { pass = "Yes"; }
 		else { pass = "No"; }
 
-		ctx.reply(`*Display Name*: ${him.displayName}\n*Account ID*: ${him.accountId}\n*Added On*: ${moment.utc(him.created).format("dddd, MMMM Do YYYY, HH:mm")}\n*48 Hours Passed*? ${pass}`);
+		ctx.reply(`*Display Name*: ${him.displayName}\n*Account ID*: ${him.accountId}\n*Added On*: ${moment.utc(him.created).format("dddd, MMMM Do YYYY, HH:mm")}\n*48 Hours Passed*? ${pass}`, { parse_mode: "markdown" });
 	},
 };

@@ -51,18 +51,6 @@ app.telegram.getMe().then(async (bot_informations) => {
 	console.log("Server has initialized bot nickname. Nick: " + bot_informations.username);
 });
 
-app.hears("hi", async (ctx) => {
-	console.log(ctx.message.text.toUpperCase());
-	const tag = await premUsers.findOne({
-		ID: ctx.from.id,
-	});
-	if (!tag) {
-		return ctx.reply("❌ Purchase Premium from @im2rnado first!");
-	}
-	console.log(ctx.from);
-	ctx.reply("Hey!");
-});
-
 app.on("text", async (ctx) => {
 	console.log("Received msg");
 	const tagName = ctx.from.id;
@@ -75,6 +63,7 @@ app.on("text", async (ctx) => {
 			ID: ctx.message.text,
 		});
 		if (!works) {
+			awaitReply.delete(tagName);
 			return ctx.reply("❌ This code does not exist!");
 		}
 
@@ -94,6 +83,7 @@ app.on("text", async (ctx) => {
 		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
 		if (!works) {
+			awaitReply.delete(tagName);
 			return ctx.reply("❌ You are not logged in!");
 		}
 
@@ -107,12 +97,14 @@ app.on("text", async (ctx) => {
 			item = featured[number];
 		}
 		if (item) {
+			awaitReply.delete(tagName);
 			sessions.set(`${tagName}-buy`, item);
 			ctx.reply("Are you sure you would like to purchase this item?",
 				Markup.inlineKeyboard([Markup.callbackButton("Yes, continue", "purchase")]).extra(),
 			);
 		}
 		else {
+			awaitReply.delete(tagName);
 			return ctx.reply(`❌ *Item Not Found!*\n\nIt looks like there isn't any item with the name *${ctx.message.text}*\nUse /shop to get today's Item Shop.`, { parse_mode: "markdown" });
 		}
 	}
@@ -120,6 +112,7 @@ app.on("text", async (ctx) => {
 		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
 		if (!works) {
+			awaitReply.delete(tagName);
 			return ctx.reply("❌ You are not logged in!");
 		}
 
@@ -152,6 +145,7 @@ app.on("text", async (ctx) => {
 		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
 		if (!works) {
+			awaitReply.delete(tagName);
 			return ctx.reply("❌ You are not logged in!");
 		}
 
@@ -163,6 +157,8 @@ app.on("text", async (ctx) => {
 			awaitReply.delete(tagName);
 			return ctx.reply("❌ There is no user with this name!");
 		});
+
+		if(!reponse7.data.id) return ctx.reply("❌ There is no user with this name!");
 
 		const accId = reponse7.data;
 
@@ -176,8 +172,11 @@ app.on("text", async (ctx) => {
 		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
 		if (!works) {
+			awaitReply.delete(tagName);
 			return ctx.reply("❌ You are not logged in!");
 		}
+		const gh = await sessions.get(`${tagName}-friend`);
+		if (gh) await sessions.delete(`${tagName}-friend`);
 
 		const reponse7 = await axios.get(`${Endpoints.DEVICE_AUTH}/displayName/${encodeURI(ctx.message.text)}`, { headers: {
 			"Content-Type": "application/json",
@@ -202,6 +201,7 @@ app.on("text", async (ctx) => {
 		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
 		if (!works) {
+			awaitReply.delete(tagName);
 			return ctx.reply("❌ You are not logged in!");
 		}
 
@@ -234,6 +234,7 @@ app.on("text", async (ctx) => {
 		};
 
 		if (!(ctx.message.text.toLowerCase() === "wegame" || ctx.message.text.toLowerCase() === "epicpckorea" || ctx.message.text.toLowerCase() === "epic" || ctx.message.text.toLowerCase() === "epicpc" || ctx.message.text.toLowerCase() === "epicandroid" || ctx.message.text.toLowerCase() === "psn" || ctx.message.text.toLowerCase() === "live" || ctx.message.text.toLowerCase() === "iosappstore" || ctx.message.text.toLowerCase() === "nintendo" || ctx.message.text.toLowerCase() === "samsung" || ctx.message.text.toLowerCase() === "shared")) {
+			awaitReply.delete(tagName);
 			return ctx.reply(`❌ Wrong Usage\n\n*Valid Platforms*: ${platform.join(" - ")}`, { parse_mode: "markdown" });
 		}
 
@@ -257,6 +258,7 @@ app.on("text", async (ctx) => {
 		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
 		if (!works) {
+			awaitReply.delete(tagName);
 			return ctx.reply("❌ You are not logged in!");
 		}
 
@@ -265,6 +267,7 @@ app.on("text", async (ctx) => {
 			"Authorization": "Basic ZWZlM2NiYjkzODgwNGM3NGIyMGUxMDlkMGVmYzE1NDg6NmUzMWJkYmFlNmE0NGYyNTg0NzQ3MzNkYjc0ZjM5YmE",
 		} }).catch((err) => {
 			console.error(err);
+			awaitReply.delete(tagName);
 		});
 
 		const new_token = response3.data.access_token;
@@ -287,6 +290,7 @@ app.on("text", async (ctx) => {
 		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
 		if (!works) {
+			awaitReply.delete(tagName);
 			return ctx.reply("❌ You are not logged in!");
 		}
 

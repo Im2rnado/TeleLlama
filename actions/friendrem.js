@@ -29,7 +29,7 @@ module.exports = {
 
 		const accId = await sessions.get(`${tagName}-friend`);
 
-		await axios.delete(`${Endpoints.FRIENDS_URL}/public/friends/${token.account_id}/${accId.accountId}`, {}, { headers: {
+		await axios.delete(`${Endpoints.FRIENDS_URL}/public/friends/${token.account_id}/${accId.id}`, { headers: {
 			"Content-Type": "application/json",
 			"Authorization": `Bearer ${token.access_token}`,
 		} }).then((response) => {

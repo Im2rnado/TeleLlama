@@ -6,7 +6,7 @@ module.exports = {
 
 		console.log(item.offer);
 
-		const buy = await axios.post(`${Endpoints.PUBLIC_BASE_URL}/game/v2/profile/${token.account_id}/client/PurchaseCatalogEntry?profileId=common_core`, {
+		const buy = await axios.post(`${Endpoints.PUBLIC_BASE_URL}/game/v2/profile/${token.account_id}/client/GiftCatalogEntry?profileId=common_core`, {
 			"offerId": item.offer,
 			"purchaseQuantity": 1,
 			"currency": "MtxCurrency",
