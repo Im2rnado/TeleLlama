@@ -41,8 +41,11 @@ module.exports = {
 		ctx.reply("Please reply with the item name you want to purchase within 5 minutes");
 		setTimeout(stopInterval, 300000);
 
-		function stopInterval() {
-			awaitReply.delete(tagName);
+		async function stopInterval() {
+			const h = await awaitReply.get(tagName);
+			if (h == "buy") {
+				awaitReply.delete(tagName);
+			}
 		}
 	},
 };

@@ -41,8 +41,11 @@ module.exports = {
 		ctx.reply("Please reply with the new display name you would like to set within 5 minutes");
 		setTimeout(stopInterval, 300000);
 
-		function stopInterval() {
-			awaitReply.delete(tagName);
+		async function stopInterval() {
+			const h = await awaitReply.get(tagName);
+			if (h == "name") {
+				awaitReply.delete(tagName);
+			}
 		}
 	},
 };

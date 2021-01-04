@@ -116,6 +116,83 @@ app.on("text", async (ctx) => {
 			return ctx.reply(`❌ *Item Not Found!*\n\nIt looks like there isn't any item with the name *${ctx.message.text}*\nUse /shop to get today's Item Shop.`, { parse_mode: "markdown" });
 		}
 	}
+	else if (what == "gift") {
+		console.log(ctx.message.text);
+		const works = await sessions.get(tagName);
+		if (!works) {
+			return ctx.reply("❌ You are not logged in!");
+		}
+
+		const cosmetics = await axios.get("https://api.carbidebot.com/shop/combined");
+
+		const featured = cosmetics.data.br;
+
+		let item = featured.find(i => i.name.toLowerCase() === ctx.message.text.toLowerCase());
+		if (!isNaN(ctx.message.text) && !item) {
+			const number = ctx.message.text - 1;
+			item = featured[number];
+		}
+		if (item) {
+			awaitReply.delete(tagName);
+
+			awaitReply.set(tagName, "giftuser");
+			sessions.set(`${tagName}-gift`, item);
+
+			ctx.reply("Please reply with the user name you want to gift within 5 minutes");
+			setTimeout(function() {
+				awaitReply.delete(tagName);
+			}, 300000);
+		}
+		else {
+			return ctx.reply(`❌ *Item Not Found!*\n\nIt looks like there isn't any item with the name *${ctx.message.text}*\nUse /shop to get today's Item Shop.`, { parse_mode: "markdown" });
+		}
+	}
+	else if (what == "giftuser") {
+		console.log(ctx.message.text);
+		const works = await sessions.get(tagName);
+		if (!works) {
+			return ctx.reply("❌ You are not logged in!");
+		}
+
+		const reponse7 = await axios.get(`${Endpoints.DEVICE_AUTH}/displayName/${encodeURI(ctx.message.text)}`, { headers: {
+			"Content-Type": "application/json",
+			"Authorization": `Bearer ${works.access_token}`,
+		} }).catch((err) => {
+			console.error(err);
+			return ctx.reply("❌ There is no user with this name!");
+		});
+
+		const accId = reponse7.data;
+
+		sessions.set(`${tagName}-giftuser`, accId);
+		ctx.reply("Are you sure you would like to gift this item?",
+			Markup.inlineKeyboard([Markup.callbackButton("Yes, continue", "gift")]).extra(),
+		);
+	}
+	else if (what == "friend") {
+		console.log(ctx.message.text);
+		const works = await sessions.get(tagName);
+		if (!works) {
+			return ctx.reply("❌ You are not logged in!");
+		}
+
+		const reponse7 = await axios.get(`${Endpoints.DEVICE_AUTH}/displayName/${encodeURI(ctx.message.text)}`, { headers: {
+			"Content-Type": "application/json",
+			"Authorization": `Bearer ${works.access_token}`,
+		} }).catch((err) => {
+			console.error(err);
+			return ctx.reply("❌ There is no user with this name!");
+		});
+
+		const accId = reponse7.data;
+
+		const h = [Markup.callbackButton("Add Friend", "friendadd"), Markup.callbackButton("Remove Friend", "friendrem"), Markup.callbackButton("Get Info", "friendinfo")];
+
+		sessions.set(`${tagName}-friend`, accId);
+		ctx.reply("Please choose what you would like to do to this user",
+			Markup.inlineKeyboard(h).extra(),
+		);
+	}
 	else if (what == "platform") {
 		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
@@ -199,6 +276,29 @@ app.on("text", async (ctx) => {
 			console.error(err);
 			awaitReply.delete(tagName);
 			return ctx.reply(`❌ *${err.response.data.errorMessage}*`, { parse_mode: "markdown" });
+		});
+	}
+	else if (what == "homebase") {
+		console.log(ctx.message.text);
+		const works = await sessions.get(tagName);
+		if (!works) {
+			return ctx.reply("❌ You are not logged in!");
+		}
+
+		await axios.post(`${Endpoints.PUBLIC_BASE_URL}/game/v2/profile/${works.account_id}/client/SetHomebaseName?profileId=common_public&rvn=-1`, {
+			"homebaseName": ctx.message.text,
+		}, { headers: {
+			"Content-Type": "application/json",
+			"Authorization": `Bearer ${works.access_token}`,
+		} }).then((response) => {
+			console.log(response.data);
+
+			ctx.reply(`✅ Successfully set homebase name to *${ctx.message.text}*`, { parse_mode: "markdown" });
+			awaitReply.delete(tagName);
+		}).catch((err) => {
+			console.error(err);
+			awaitReply.delete(tagName);
+			return ctx.reply(`❌ You do not own STW or you cannot set your Homebase Name to this. *${err.response.data.errorMessage}*`, { parse_mode: "markdown" });
 		});
 	}
 });

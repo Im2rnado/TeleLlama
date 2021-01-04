@@ -1,3 +1,5 @@
+/* eslint-disable no-inline-comments */
+// Resources
 require("dotenv").config();
 const Auth = require("../libs/auth");
 
@@ -5,7 +7,7 @@ const Auth = require("../libs/auth");
 const deviceauth = require("../models/deviceauth.js");
 
 module.exports = {
-	name: "undo",
+	name: "homebase",
 	async execute(ctx, sessions, awaitReply) {
 
 		const tagName = ctx.from.id;
@@ -34,28 +36,14 @@ module.exports = {
 			awaitReply.delete(tagName);
 		}
 
-		awaitReply.set(tagName, "platform");
+		awaitReply.set(tagName, "homebase");
 
-		const platforms = [
-			"WeGame",
-			"EpicPCKorea",
-			"Epic",
-			"EpicPC",
-			"EpicAndroid",
-			"PSN",
-			"Live",
-			"IOSAppStore",
-			"Nintendo",
-			"Samsung",
-			"Shared",
-		];
-
-		ctx.reply(`Please reply with the platform name you want to set within 5 minutes\n\n*Valid Platforms*: ${platforms.join(" - ")}`, { parse_mode: "markdown" });
+		ctx.reply("Please reply with the name you would like to set your Homebase to within 5 minutes");
 		setTimeout(stopInterval, 300000);
 
 		async function stopInterval() {
 			const h = await awaitReply.get(tagName);
-			if (h == "platform") {
+			if (h == "homebase") {
 				awaitReply.delete(tagName);
 			}
 		}

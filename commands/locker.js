@@ -109,7 +109,7 @@ module.exports = {
 		// Skins
 		ctx.reply(`Rendering *${parseds.length}* skins. This may take a while ...`, { parse_mode: "markdown" });
 		const parsedss = await Sort(parseds);
-		await createLocker(parsedss, ctx.from);
+		await createLocker(parsedss, ctx.from, "Skins");
 		console.log("Created Skins Image");
 		if (fs.existsSync(`./final/${tagName}-locker.png`)) path = `./final/${tagName}-locker.png`;
 		else path = `./final/${tagName}-locker.jpeg`;
@@ -119,9 +119,9 @@ module.exports = {
 		// Emotes
 		ctx.reply(`Rendering *${parsede.length}* emotes. This may take a while ...`, { parse_mode: "markdown" });
 		const parsedee = await Sort(parsede);
-		await createLocker(parsedee, ctx.from);
+		await createLocker(parsedee, ctx.from, "Emotes");
 		console.log("Created Emotes Image");
-		if (fs.existsSync(`./final/${tagName}-locker.png`)) path = "./final/locker.png";
+		if (fs.existsSync(`./final/${tagName}-locker.png`)) path = `./final/${tagName}-locker.png`;
 		else path = `./final/${tagName}-locker.jpeg`;
 		await ctx.replyWithPhoto({ source: path }, { caption: `${parsede.length} Emotes` });
 		fs.unlinkSync(path);
@@ -129,7 +129,7 @@ module.exports = {
 		// Pickaxes
 		ctx.reply(`Rendering *${parsedp.length}* pickaxes. This may take a while ...`, { parse_mode: "markdown" });
 		const parsedpp = await Sort(parsedp);
-		await createLocker(parsedpp, ctx.from);
+		await createLocker(parsedpp, ctx.from, "Pickaxes");
 		console.log("Created Pickaxes Image");
 		if (fs.existsSync(`./final/${tagName}-locker.png`)) path = `./final/${tagName}-locker.png`;
 		else path = `./final/${tagName}-locker.jpeg`;
@@ -139,7 +139,7 @@ module.exports = {
 		// Gliders
 		ctx.reply(`Rendering *${parsedg.length}* gliders. This may take a while ...`, { parse_mode: "markdown" });
 		const parsedgg = await Sort(parsedg);
-		await createLocker(parsedgg, ctx.from);
+		await createLocker(parsedgg, ctx.from, "Gliders");
 		console.log("Created Gliders Image");
 		if (fs.existsSync(`./final/${tagName}-locker.png`)) path = `./final/${tagName}-locker.png`;
 		else path = `./final/${tagName}-locker.jpeg`;

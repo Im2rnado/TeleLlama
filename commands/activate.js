@@ -26,8 +26,11 @@ module.exports = {
 		ctx.reply("Please reply with your activation within 5 minutes");
 		setTimeout(stopInterval, 300000);
 
-		function stopInterval() {
-			awaitReply.delete(tagName);
+		async function stopInterval() {
+			const h = await awaitReply.get(tagName);
+			if (h == "activate") {
+				awaitReply.delete(tagName);
+			}
 		}
 	},
 };
