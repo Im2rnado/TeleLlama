@@ -144,6 +144,7 @@ app.on("text", async (ctx) => {
 			}, 300000);
 		}
 		else {
+			awaitReply.delete(tagName);
 			return ctx.reply(`❌ *Item Not Found!*\n\nIt looks like there isn't any item with the name *${ctx.message.text}*\nUse /shop to get today's Item Shop.`, { parse_mode: "markdown" });
 		}
 	}
@@ -159,12 +160,14 @@ app.on("text", async (ctx) => {
 			"Authorization": `Bearer ${works.access_token}`,
 		} }).catch((err) => {
 			console.error(err);
+			awaitReply.delete(tagName);
 			return ctx.reply("❌ There is no user with this name!");
 		});
 
 		const accId = reponse7.data;
 
 		sessions.set(`${tagName}-giftuser`, accId);
+		awaitReply.delete(tagName);
 		ctx.reply("Are you sure you would like to gift this item?",
 			Markup.inlineKeyboard([Markup.callbackButton("Yes, continue", "gift")]).extra(),
 		);
@@ -181,6 +184,7 @@ app.on("text", async (ctx) => {
 			"Authorization": `Bearer ${works.access_token}`,
 		} }).catch((err) => {
 			console.error(err);
+			awaitReply.delete(tagName);
 			return ctx.reply("❌ There is no user with this name!");
 		});
 
@@ -189,9 +193,10 @@ app.on("text", async (ctx) => {
 		const h = [Markup.callbackButton("Add Friend", "friendadd"), Markup.callbackButton("Remove Friend", "friendrem"), Markup.callbackButton("Get Info", "friendinfo")];
 
 		sessions.set(`${tagName}-friend`, accId);
-		ctx.reply("Please choose what you would like to do to this user",
+		ctx.reply(`Please choose what you would like to do to ${accId.displayName}`,
 			Markup.inlineKeyboard(h).extra(),
 		);
+		awaitReply.delete(tagName);
 	}
 	else if (what == "platform") {
 		console.log(ctx.message.text);
