@@ -55,15 +55,15 @@ module.exports = {
 		if(!keys.length) embed = "None";
 
 		keys.forEach(el => {
-			embed.push(`*Type*: ${el.type}\n*Name*: ${el.externalDisplayName}\n*Added On*: ${moment.utc(el.dateAdded).format("dddd, MMMM Do YYYY, HH:mm:ss")}`);
+			embed.push(`Type: ${el.type}\nName: ${el.externalDisplayName}\nAdded On: ${moment.utc(el.dateAdded).format("dddd, MMMM Do YYYY, HH:mm:ss")}`);
 		});
 
 		if (!tag) {
-			ctx.reply(`*Linked Accounts*\n\n${embed[0]}`, { parse_mode: "markdown" });
-			return ctx.reply("❌ This is just one account, to view all of them, purchase an Activation code from any of our admins:\n• @im2rnado - BTC\n• @sxlar_sells - CashApp\n• @dingus69 - PayTM \n• @ehdan69 CashApp, PayPal, PayTM!");
+			ctx.reply(`Linked Accounts\n\n${embed[0]}`, { parse_mode: "markdown" });
+			return ctx.reply("❌ This is just one account, to view all of them, purchase an Activation code from any of our admins:\n\\• @im2rnado - BTC\n\\• @sxlar_sells - CashApp\n\\• @dingus69 - PayTM \n\\• @ehdan69 CashApp, PayPal, PayTM!");
 		}
 		embed.forEach(el => {
-			ctx.reply(el, { parse_mode: "markdown" });
+			ctx.reply(el);
 		});
 	},
 };
