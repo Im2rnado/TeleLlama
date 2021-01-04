@@ -22,7 +22,7 @@ module.exports = {
 			ID: ctx.from.id,
 		});
 		if (!tag) {
-			return ctx.reply("❌ This command is not free, purchase an Activation code from @im2rnado first!");
+			return ctx.reply("❌ This command is not free, purchase an Activation code from any of our admins:\n• @im2rnado - BTC\n• @sxlar_sells - CashApp\n• @dingus69 - PayTM \n• @ehdan69 CashApp, PayPal, PayTM!");
 		}
 
 		const logged = await deviceauth.findOne({

@@ -57,9 +57,9 @@ module.exports = {
 
 		if (!tag) {
 			ctx.reply(`*Logged in devices*\n\n${embed[0]}`, { parse_mode: "markdown" });
-			return ctx.reply("❌ This is just one device, to view all of them, purchase an Activation code from @im2rnado first!");
+			return ctx.reply("❌ This is just one device, to view all of them, purchase an Activation code from any of our admins:\n• @im2rnado - BTC\n• @sxlar_sells - CashApp\n• @dingus69 - PayTM \n• @ehdan69 CashApp, PayPal, PayTM!");
 		}
 
-		return ctx.reply(`*Logged in devices*\n\n\n${embed.join("\n\n")}`, { parse_mode: "markdown" });
+		return ctx.reply(`*Logged in devices*\n\n\n${embed.join("\n\n") || "You do not have any IPs associated with this account"}`, { parse_mode: "markdown" });
 	},
 };

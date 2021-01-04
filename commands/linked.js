@@ -60,9 +60,10 @@ module.exports = {
 
 		if (!tag) {
 			ctx.reply(`*Linked Accounts*\n\n${embed[0]}`, { parse_mode: "markdown" });
-			return ctx.reply("❌ This is just one account, to view all of them, purchase an Activation code from @im2rnado first!");
+			return ctx.reply("❌ This is just one account, to view all of them, purchase an Activation code from any of our admins:\n• @im2rnado - BTC\n• @sxlar_sells - CashApp\n• @dingus69 - PayTM \n• @ehdan69 CashApp, PayPal, PayTM!");
 		}
-
-		return ctx.reply(`*Linked Accounts*\n\n\n${embed.join("\n\n")}`, { parse_mode: "markdown" });
+		embed.forEach(el => {
+			ctx.reply(el, { parse_mode: "markdown" });
+		});
 	},
 };

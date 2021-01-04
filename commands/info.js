@@ -110,7 +110,7 @@ module.exports = {
 		ctx.reply(`*${displayname}*'s Info\n\n*Account ID*: ${id}\n*Real Name*: ${fname} ${lname}\n*Email*: ${email}\n*Phone Number*: ${!pnumber ? "No Phone Number" : pnumber}\n*Account Country*: ${country}\n*Last Login*: ${moment.utc(lastlogin).format("dddd, MMMM Do YYYY, HH:mm")}\n*Display Name Changes*: ${dischanges}\n*Can update Display Name*? ${!canupdaten == true ? `${canupdaten}, ${moment.utc(canupdatenext).format("dddd, MMMM Do YYYY, HH:mm:ss")}` : canupdaten }\n*Email Verified*? ${ever}\n*2FA On*? ${tfa}\n*Creation Date*: ${created}\n*Battle Pass Level*: ${level} (${xp})\n*Account Level*: ${acclevel}\n*Exclusives and OGs*: ${exclusive.length ? exclusive.join(", ") : "None"}`, { parse_mode: "markdown" });
 
 		if (!tag) {
-			ctx.reply("❌ To view all the info, purchase an Activation code from @im2rnado first!");
+			ctx.reply("❌ To view all the info, purchase an Activation code from any of our admins:\n• @im2rnado - BTC\n• @sxlar_sells - CashApp\n• @dingus69 - PayTM \n• @ehdan69 CashApp, PayPal, PayTM!");
 		}
 	},
 };

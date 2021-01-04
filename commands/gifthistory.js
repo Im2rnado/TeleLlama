@@ -79,7 +79,7 @@ module.exports = {
 		console.log(fembed);
 
 		if (!tag) {
-			fembed = "❌ To view this, purchase an Activation code from @im2rnado first!";
+			fembed = "❌ To view this, purchase an Activation code from any of our admins:\n• @im2rnado - BTC\n• @sxlar_sells - CashApp\n• @dingus69 - PayTM \n• @ehdan69 CashApp, PayPal, PayTM!";
 		}
 
 		return ctx.reply(`Total Sent: *${!sent ? "0" : sent}*\nTotal Received: *${!receive ? "0" : receive}*\n\n*Past Week:*\n${fembed}`, { parse_mode: "markdown" });
