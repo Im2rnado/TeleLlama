@@ -26,14 +26,7 @@ class Auth {
 			deviceAuthDetails = deviceAuthFileBuffer;
 		}
 		else {
-			deviceAuthDetails = await this.GenerateDeviceAuth(exchange);
-			const newData = new deviceauth({
-				authorID: tagName,
-				accountId: deviceAuthDetails.accountId,
-				deviceId: deviceAuthDetails.deviceId,
-				secret: deviceAuthDetails.secret,
-			});
-			await newData.save();
+			return;
 		}
 		const authData = {
 			grant_type: "device_auth",
