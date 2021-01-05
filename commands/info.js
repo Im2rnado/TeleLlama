@@ -87,7 +87,7 @@ module.exports = {
 				const isExlusive = exclusives.find(el => el === item.id.toLowerCase());
 				if (isExlusive) {
 					item.rarity.value = "exclusive";
-					exclusive.push(item);
+					exclusive.push(item.name);
 				}
 			}
 		}
