@@ -1,9 +1,6 @@
-require("dotenv").config();
 const Auth = require("../libs/auth");
 const Endpoints = require("../utils/endpoints");
 const axios = require("axios").default;
-
-// Database
 const deviceauth = require("../models/deviceauth.js");
 
 module.exports = {

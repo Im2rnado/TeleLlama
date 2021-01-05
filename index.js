@@ -54,7 +54,6 @@ app.telegram.getMe().then(async (bot_informations) => {
 });
 
 app.on("text", async (ctx) => {
-	console.log("Received msg");
 	const tagName = ctx.from.id;
 
 	const what = awaitReply.get(tagName);
@@ -82,7 +81,6 @@ app.on("text", async (ctx) => {
 		awaitReply.delete(tagName);
 	}
 	else if (what == "buy") {
-		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
 		if (!works) {
 			awaitReply.delete(tagName);
@@ -111,7 +109,6 @@ app.on("text", async (ctx) => {
 		}
 	}
 	else if (what == "gift") {
-		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
 		if (!works) {
 			awaitReply.delete(tagName);
@@ -144,7 +141,6 @@ app.on("text", async (ctx) => {
 		}
 	}
 	else if (what == "giftuser") {
-		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
 		if (!works) {
 			awaitReply.delete(tagName);
@@ -171,7 +167,6 @@ app.on("text", async (ctx) => {
 		);
 	}
 	else if (what == "friend") {
-		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
 		if (!works) {
 			awaitReply.delete(tagName);
@@ -194,13 +189,12 @@ app.on("text", async (ctx) => {
 		const h = [Markup.callbackButton("Add Friend", "friendadd"), Markup.callbackButton("Remove Friend", "friendrem"), Markup.callbackButton("Get Info", "friendinfo")];
 
 		sessions.set(`${tagName}-friend`, accId);
-		ctx.reply(`Please choose what you would like to do to ${accId.displayName}`,
+		ctx.reply(`Please choose what you would like to do to ${accId.displayName || accId.id}`,
 			Markup.inlineKeyboard(h).extra(),
 		);
 		awaitReply.delete(tagName);
 	}
 	else if (what == "platform") {
-		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
 		if (!works) {
 			awaitReply.delete(tagName);
@@ -257,7 +251,6 @@ app.on("text", async (ctx) => {
 		});
 	}
 	else if (what == "name") {
-		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
 		if (!works) {
 			awaitReply.delete(tagName);
@@ -280,7 +273,7 @@ app.on("text", async (ctx) => {
 			"Content-Type": "application/json",
 			"Authorization": `Bearer ${new_token}`,
 		} }).then((response) => {
-			ctx.reply(`✅ Successfully changed display name\n\n*Old Display Name*: ${works.displayName}\n*New Display Name*: ${response.data.accountInfo.displayName}\n*Number of Display Name changes*: ${response.data.accountInfo.numberOfDisplayNameChanges}\n*Can update Display Name next*: ${moment.utc(response.data.accountInfo.canUpdateDisplayNameNext).format("dddd, MMMM Do YYYY, HH:mm")}`, { parse_mode: "markdown" });
+			ctx.reply(`✅ Successfully changed display name\n\nOld Display Name: ${works.displayName}\nNew Display Name: ${response.data.accountInfo.displayName}\nNumber of Display Name changes: ${response.data.accountInfo.numberOfDisplayNameChanges}\nCan update Display Name next: ${moment.utc(response.data.accountInfo.canUpdateDisplayNameNext).format("dddd, MMMM Do YYYY, HH:mm")}`);
 			awaitReply.delete(tagName);
 		}).catch((err) => {
 			console.error(err);
@@ -289,7 +282,6 @@ app.on("text", async (ctx) => {
 		});
 	}
 	else if (what == "homebase") {
-		console.log(ctx.message.text);
 		const works = await sessions.get(tagName);
 		if (!works) {
 			awaitReply.delete(tagName);
@@ -309,7 +301,7 @@ app.on("text", async (ctx) => {
 		}).catch((err) => {
 			console.error(err);
 			awaitReply.delete(tagName);
-			return ctx.reply(`❌ You do not own STW or you cannot set your Homebase Name to this. *${err.response.data.errorMessage}*`, { parse_mode: "markdown" });
+			return ctx.reply(`❌ You do not own STW or you cannot set your Homebase Name to this name. *${err.response.data.errorMessage}*`, { parse_mode: "markdown" });
 		});
 	}
 });

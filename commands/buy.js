@@ -1,6 +1,3 @@
-/* eslint-disable no-inline-comments */
-// Resources
-require("dotenv").config();
 const Auth = require("../libs/auth");
 
 // Database

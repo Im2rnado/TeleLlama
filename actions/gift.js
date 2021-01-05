@@ -25,7 +25,12 @@ module.exports = {
 			sessions.delete(`${tagName}-giftuser`);
 			return ctx.reply(`❌ ${e}`);
 		}
-		ctx.reply(`✅ Successfully Gifted *${item.name}* to *${user.displayName}*\n\n*V-Bucks Remaining*: ${h.vbucks}!`, { parse_mode: "markdown" });
+		try {
+			ctx.reply(`✅ Successfully Gifted *${item.name}* to *${user.displayName}*\n\n*V-Bucks Remaining*: ${h.vbucks}`, { parse_mode: "markdown" });
+		}
+		catch {
+			ctx.reply(`✅ Successfully Gifted ${item.name} to ${user.displayName}\n\nV-Bucks Remaining: ${h.vbucks}`);
+		}
 		awaitReply.delete(tagName);
 		sessions.delete(`${tagName}-gift`);
 		sessions.delete(`${tagName}-giftuser`);

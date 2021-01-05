@@ -34,8 +34,12 @@ module.exports = {
 			"Authorization": `Bearer ${token.access_token}`,
 		} }).then((response) => {
 			console.log(response);
-
-			ctx.reply(`✅ Successfully added *${accId.displayName}*`, { parse_mode: "markdown" });
+			try {
+				ctx.reply(`✅ Successfully added *${accId.displayName}*`, { parse_mode: "markdown" });
+			}
+			catch {
+				ctx.reply(`✅ Successfully added ${accId.displayName}`);
+			}
 		}).catch((err) => {
 			console.error(err);
 			return ctx.reply(`❌ ${err.response.data.errorMessage}`);

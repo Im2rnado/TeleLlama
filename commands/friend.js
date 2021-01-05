@@ -1,6 +1,4 @@
 const Auth = require("../libs/auth");
-
-// Database
 const deviceauth = require("../models/deviceauth.js");
 
 module.exports = {

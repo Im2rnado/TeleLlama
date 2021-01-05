@@ -1,10 +1,5 @@
-/* eslint-disable no-inline-comments */
-// Resources
-require("dotenv").config();
 const Endpoints = require("../utils/endpoints");
 const Auth = require("../libs/auth");
-
-// Modules
 const axios = require("axios").default;
 const moment = require("moment");
 
@@ -79,7 +74,7 @@ module.exports = {
 		console.log(fembed);
 
 		if (!tag) {
-			fembed = "❌ To view this, purchase an Activation code from any of our admins:\n• @im2rnado - BTC\n• @sxlar_sells - CashApp\n• @dingus69 - PayTM \n• @ehdan69 CashApp, PayPal, PayTM!";
+			fembed = "❌ To view this, purchase an Activation code from any of our admins:\n• @im2rnado - BTC\n• @dingus69 - PayTM \n• @ehdan69 CashApp, PayPal, PayTM!";
 		}
 
 		return ctx.reply(`Total Sent: *${!sent ? "0" : sent}*\nTotal Received: *${!receive ? "0" : receive}*\n\n*Past Week:*\n${fembed}`, { parse_mode: "markdown" });

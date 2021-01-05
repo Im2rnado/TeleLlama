@@ -1,9 +1,4 @@
-/* eslint-disable no-inline-comments */
-// Resources
-require("dotenv").config();
 const Auth = require("../libs/auth");
-
-// Database
 const deviceauth = require("../models/deviceauth.js");
 
 module.exports = {

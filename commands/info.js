@@ -107,8 +107,12 @@ module.exports = {
 			level = "⋆⋆⋆";
 		}
 
-		ctx.reply(`*${displayname}*'s Info\n\n*Account ID*: ${id}\n*Real Name*: ${fname} ${lname}\n*Email*: ${email}\n*Phone Number*: ${!pnumber ? "No Phone Number" : pnumber}\n*Account Country*: ${country}\n*Last Login*: ${moment.utc(lastlogin).format("dddd, MMMM Do YYYY, HH:mm")}\n*Display Name Changes*: ${dischanges}\n*Can update Display Name*? ${!canupdaten == true ? `${canupdaten}, ${moment.utc(canupdatenext).format("dddd, MMMM Do YYYY, HH:mm:ss")}` : canupdaten }\n*Email Verified*? ${ever}\n*2FA On*? ${tfa}\n*Creation Date*: ${created}\n*Battle Pass Level*: ${level} (${xp})\n*Account Level*: ${acclevel}\n*Exclusives and OGs*: ${exclusive.length ? exclusive.join(", ") : "None"}`, { parse_mode: "markdown" });
-
+		try {
+			ctx.reply(`*${displayname}*'s Info\n\n*Account ID*: ${id}\n*Real Name*: ${fname} ${lname}\n*Email*: ${email}\n*Phone Number*: ${!pnumber ? "No Phone Number" : pnumber}\n*Account Country*: ${country}\n*Last Login*: ${moment.utc(lastlogin).format("dddd, MMMM Do YYYY, HH:mm")}\n*Display Name Changes*: ${dischanges}\n*Can update Display Name*? ${!canupdaten == true ? `${canupdaten}, ${moment.utc(canupdatenext).format("dddd, MMMM Do YYYY, HH:mm:ss")}` : canupdaten }\n*Email Verified*? ${ever}\n*2FA On*? ${tfa}\n*Creation Date*: ${created}\n*Battle Pass Level*: ${level} (${xp})\n*Account Level*: ${acclevel}\n*Exclusives and OGs*: ${exclusive.length ? exclusive.join(", ") : "None"}`, { parse_mode: "markdown" });
+		}
+		catch {
+			ctx.reply(`${displayname}'s Info\n\nAccount ID: ${id}\nReal Name: ${fname} ${lname}\nEmail: ${email}\nPhone Number: ${!pnumber ? "No Phone Number" : pnumber}\nAccount Country: ${country}\nLast Login: ${moment.utc(lastlogin).format("dddd, MMMM Do YYYY, HH:mm")}\nDisplay Name Changes: ${dischanges}\nCan update Display Name? ${!canupdaten == true ? `${canupdaten}, ${moment.utc(canupdatenext).format("dddd, MMMM Do YYYY, HH:mm:ss")}` : canupdaten }\nEmail Verified? ${ever}\n*2FA On*? ${tfa}\nCreation Date: ${created}\nBattle Pass Level: ${level} (${xp})\nAccount Level: ${acclevel}\nExclusives and OGs: ${exclusive.length ? exclusive.join(", ") : "None"}`);
+		}
 		if (!tag) {
 			ctx.reply("❌ To view all the info, purchase an Activation code from any of our admins:\n• @im2rnado - BTC\n• @sxlar_sells - CashApp\n• @dingus69 - PayTM \n• @ehdan69 CashApp, PayPal, PayTM!");
 		}

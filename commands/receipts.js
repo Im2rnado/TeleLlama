@@ -1,14 +1,7 @@
-/* eslint-disable no-inline-comments */
-// Resources
-require("dotenv").config();
 const Endpoints = require("../utils/endpoints");
 const Auth = require("../libs/auth");
-
-// Modules
 const axios = require("axios").default;
 const { Markup } = require("telegraf");
-
-// Database
 const deviceauth = require("../models/deviceauth.js");
 
 module.exports = {

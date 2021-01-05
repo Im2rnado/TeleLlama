@@ -1,13 +1,6 @@
-/* eslint-disable no-inline-comments */
-// Resources
-require("dotenv").config();
 const Endpoints = require("../utils/endpoints");
 const Auth = require("../libs/auth");
-
-// Modules
 const axios = require("axios").default;
-
-// Database
 const deviceauth = require("../models/deviceauth.js");
 
 module.exports = {
@@ -61,6 +54,6 @@ module.exports = {
 		if (reward === "CardPack:cardpack_hero_r") reward = "Rare Hero";
 		if (reward === "AccountResource:eventcurrency_scaling") reward = "Gold";
 
-		return ctx.reply(`✅ Successfully Claimed Daily Reward\n\n*Days Logged in*: ${notification.daysLoggedIn}\n*Claimed*: ${quan} x ${reward}`, { parse_mode: "markdown" });
+		return ctx.reply(`✅ Successfully Claimed Daily Reward\n\nDays Logged in: ${notification.daysLoggedIn}\nClaimed: ${quan} x ${reward}`);
 	},
 };

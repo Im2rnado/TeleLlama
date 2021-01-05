@@ -1,16 +1,19 @@
-/* eslint-disable no-inline-comments */
-// Resources
-require("dotenv").config();
 const Auth = require("../libs/auth");
-
-// Database
 const deviceauth = require("../models/deviceauth.js");
+const premUsers = require("../models/premium.js");
 
 module.exports = {
 	name: "homebase",
 	async execute(ctx, sessions, awaitReply) {
 
 		const tagName = ctx.from.id;
+
+		const tag = await premUsers.findOne({
+			ID: ctx.from.id,
+		});
+		if (!tag) {
+			return ctx.reply("❌ This command is not free, purchase an Activation code from any of our admins:\n• @im2rnado - BTC\n• @sxlar_sells - CashApp\n• @dingus69 - PayTM \n• @ehdan69 CashApp, PayPal, PayTM!");
+		}
 
 		const logged = await deviceauth.findOne({
 			authorID: tagName,

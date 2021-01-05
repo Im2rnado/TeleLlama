@@ -33,9 +33,13 @@ module.exports = {
 			"Content-Type": "application/json",
 			"Authorization": `Bearer ${token.access_token}`,
 		} }).then((response) => {
-			console.log(response);
-
-			ctx.reply(`✅ Successfully removed *${accId.displayName}*`, { parse_mode: "markdown" });
+			console.log(response.data);
+			try {
+				ctx.reply(`✅ Successfully removed *${accId.displayName}*`, { parse_mode: "markdown" });
+			}
+			catch {
+				ctx.reply(`✅ Successfully removed ${accId.displayName}`);
+			}
 		}).catch((err) => {
 			console.error(err);
 			return ctx.reply(`❌ ${err.response.data.errorMessage}`);

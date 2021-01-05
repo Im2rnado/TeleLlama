@@ -1,5 +1,3 @@
-/* eslint-disable no-inline-comments */
-// Database
 const premUsers = require("../models/premium.js");
 
 module.exports = {
