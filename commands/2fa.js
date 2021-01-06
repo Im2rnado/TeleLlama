@@ -25,38 +25,45 @@ module.exports = {
 			return ctx.reply("❌ This command is not free, purchase an Activation code from any of our admins:\n• @im2rnado - BTC\n• @sxlar_sells - CashApp\n• @dingus69 - PayTM \n• @ehdan69 CashApp, PayPal, PayTM!");
 		}
 
-		const logged = await deviceauth.findOne({
-			authorID: tagName,
-		});
+		try {
 
-		if (logged) {
-			const auth = new Auth();
+			const logged = await deviceauth.findOne({
+				authorID: tagName,
+			});
 
-			const onfo = await auth.login(null, tagName);
-			console.log(onfo.access_token);
-			sessions.set(tagName, onfo);
+			if (logged) {
+				const auth = new Auth();
+
+				const onfo = await auth.login(null, tagName);
+				console.log(onfo.access_token);
+				sessions.set(tagName, onfo);
+			}
+
+			const token = await sessions.get(tagName);
+
+			if (!token) {
+				return ctx.reply("❌ You are not logged in");
+			}
+
+			await axios.post(`${Endpoints.PUBLIC_BASE_URL}/game/v2/profile/${token.account_id}/client/ClaimMfaEnabled?profileId=common_core`, {
+				"bClaimForStw": false,
+			}, { headers: {
+				"Content-Type": "application/json",
+				"Authorization": `Bearer ${token.access_token}`,
+			} }).then((respons) => {
+				console.log(respons);
+				return ctx.reply("✅ Successfuly Claimed Boogie Down");
+			}).catch((err) => {
+				console.error(err);
+				return ctx.reply("❌ Please enable 2FA from the link below first", Markup.inlineKeyboard([
+					Markup.urlButton("Epic Games", "https://www.epicgames.com/account/password"),
+				]).extra(),
+				);
+			});
 		}
-
-		const token = await sessions.get(tagName);
-
-		if (!token) {
-			return ctx.reply("❌ You are not logged in");
-		}
-
-		await axios.post(`${Endpoints.PUBLIC_BASE_URL}/game/v2/profile/${token.account_id}/client/ClaimMfaEnabled?profileId=common_core`, {
-			"bClaimForStw": false,
-		}, { headers: {
-			"Content-Type": "application/json",
-			"Authorization": `Bearer ${token.access_token}`,
-		} }).then((respons) => {
-			console.log(respons);
-			return ctx.reply("✅ Successfuly Claimed Boogie Down");
-		}).catch((err) => {
+		catch(err) {
 			console.error(err);
-			return ctx.reply("❌ Please enable 2FA from the link below first", Markup.inlineKeyboard([
-				Markup.urlButton("Epic Games", "https://www.epicgames.com/account/password"),
-			]).extra(),
-			);
-		});
+			return ctx.reply(`❌ You encountered an error\n\n${err}`);
+		}
 	},
 };

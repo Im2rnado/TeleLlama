@@ -21,45 +21,52 @@ module.exports = {
 			ID: ctx.from.id,
 		});
 
-		const logged = await deviceauth.findOne({
-			authorID: tagName,
-		});
+		try {
 
-		if (logged) {
-			const auth = new Auth();
+			const logged = await deviceauth.findOne({
+				authorID: tagName,
+			});
 
-			const onfo = await auth.login(null, tagName);
-			console.log(onfo.access_token);
-			sessions.set(tagName, onfo);
+			if (logged) {
+				const auth = new Auth();
+
+				const onfo = await auth.login(null, tagName);
+				console.log(onfo.access_token);
+				sessions.set(tagName, onfo);
+			}
+
+			const token = await sessions.get(tagName);
+
+			if (!token) {
+				return ctx.reply("❌ You are not logged in");
+			}
+
+			const response = await axios.get(`${Endpoints.DEVICE_AUTH}/${token.account_id}/deviceAuth`, { headers: {
+				"Content-Type": "application/json",
+				"Authorization": `Bearer ${token.access_token}`,
+			} }).catch((err) => {
+				console.error(err);
+				return ctx.reply(`An error has occured: ${err.response.data.errorMessage}`);
+			});
+
+			const keys = response.data;
+
+			const embed = [];
+
+			keys.forEach(el => {
+				embed.push(`Device ID: *${el.deviceId}*\nCreated at: *${el.created.location}*\nIP Address: *${el.created.ipAddress}*`);
+			});
+
+			if (!tag) {
+				ctx.reply(`*Logged in devices*\n\n${embed[0]}`, { parse_mode: "markdown" });
+				return ctx.reply("❌ This is just one device, to view all of them, purchase an Activation code from any of our admins:\n• @im2rnado - BTC\n• @sxlar_sells - CashApp\n• @dingus69 - PayTM \n• @ehdan69 CashApp, PayPal, PayTM!");
+			}
+
+			ctx.reply(`*Logged in devices*\n\n\n${embed.join("\n\n") || "You do not have any IPs associated with this account"}`, { parse_mode: "markdown" });
 		}
-
-		const token = await sessions.get(tagName);
-
-		if (!token) {
-			return ctx.reply("❌ You are not logged in");
-		}
-
-		const response = await axios.get(`${Endpoints.DEVICE_AUTH}/${token.account_id}/deviceAuth`, { headers: {
-			"Content-Type": "application/json",
-			"Authorization": `Bearer ${token.access_token}`,
-		} }).catch((err) => {
+		catch(err) {
 			console.error(err);
-			return ctx.reply(`An error has occured: ${err.response.data.errorMessage}`);
-		});
-
-		const keys = response.data;
-
-		const embed = [];
-
-		keys.forEach(el => {
-			embed.push(`Device ID: *${el.deviceId}*\nCreated at: *${el.created.location}*\nIP Address: *${el.created.ipAddress}*`);
-		});
-
-		if (!tag) {
-			ctx.reply(`*Logged in devices*\n\n${embed[0]}`, { parse_mode: "markdown" });
-			return ctx.reply("❌ This is just one device, to view all of them, purchase an Activation code from any of our admins:\n• @im2rnado - BTC\n• @sxlar_sells - CashApp\n• @dingus69 - PayTM \n• @ehdan69 CashApp, PayPal, PayTM!");
+			return ctx.reply(`❌ You encountered an error\n\n${err}`);
 		}
-
-		ctx.reply(`*Logged in devices*\n\n\n${embed.join("\n\n") || "You do not have any IPs associated with this account"}`, { parse_mode: "markdown" });
 	},
 };

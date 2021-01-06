@@ -9,10 +9,9 @@ module.exports = {
 	name: "shop",
 	async execute(ctx) {
 
-
 		fs.stat("./final/shop.png", async function(err) {
 			if(!err) {
-				await ctx.replyWithPhoto({ source: "./final/shop.png" }, { caption: `**🛒 Fortnite Item Shop | ${date}**` });
+				await ctx.replyWithPhoto({ source: "./final/shop.png" }, { caption: `🛒 Fortnite Item Shop | ${date}` });
 			}
 			else {
 				const response2 = await axios.get("https://api.carbidebot.com/shop/br/combined", { headers: {

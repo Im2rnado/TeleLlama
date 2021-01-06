@@ -9,40 +9,45 @@ module.exports = {
 
 		const tagName = ctx.from.id;
 
-		const logged = await deviceauth.findOne({
-			authorID: tagName,
-		});
+		try {
 
-		if (logged) {
-			const auth = new Auth();
+			const logged = await deviceauth.findOne({
+				authorID: tagName,
+			});
 
-			const onfo = await auth.login(null, tagName);
-			console.log(onfo.access_token);
-			sessions.set(tagName, onfo);
-		}
+			if (logged) {
+				const auth = new Auth();
 
-		const token = await sessions.get(tagName);
+				const onfo = await auth.login(null, tagName);
+				console.log(onfo.access_token);
+				sessions.set(tagName, onfo);
+			}
 
-		if (!token) {
-			return ctx.reply("❌ You are not logged in");
-		}
+			const token = await sessions.get(tagName);
 
-		const exists = await awaitReply.get(tagName);
+			if (!token) {
+				return ctx.reply("❌ You are not logged in");
+			}
 
-		if (exists) {
-			awaitReply.delete(tagName);
-		}
+			const exists = await awaitReply.get(tagName);
 
-		awaitReply.set(tagName, "buy");
-
-		ctx.reply("Please reply with the item name you want to purchase within 5 minutes");
-		setTimeout(stopInterval, 300000);
-
-		async function stopInterval() {
-			const h = await awaitReply.get(tagName);
-			if (h == "buy") {
+			if (exists) {
 				awaitReply.delete(tagName);
 			}
+
+			awaitReply.set(tagName, "buy");
+
+			ctx.reply("Please reply with the item name you want to purchase within 5 minutes");
+			setTimeout(async function() {
+				const h = await awaitReply.get(tagName);
+				if (h == "buy") {
+					awaitReply.delete(tagName);
+				}
+			}, 300000);
+		}
+		catch(err) {
+			console.error(err);
+			return ctx.reply(`❌ You encountered an error\n\n${err}`);
 		}
 	},
 };

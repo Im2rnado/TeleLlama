@@ -11,7 +11,7 @@ module.exports = {
 
 		if(content.length < 150) {
 
-			const canvas = createCanvas(260 * 11, (260 * imageY) + 340, "png");
+			const canvas = createCanvas(260 * 11, (260 * imageY) + 330, "png");
 			const ctx = canvas.getContext("2d");
 
 			return new Promise(async (resolve) => {
@@ -19,7 +19,7 @@ module.exports = {
 				let featuredY = 0;
 				let rendered = 0;
 
-				ctx.fillStyle = "##000000";
+				ctx.fillStyle = "#000000";
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 				for(const itemStack in content) {
@@ -96,7 +96,7 @@ module.exports = {
 				// Name
 				ctx.fillStyle = "#ffffff";
 				ctx.font = "italic 100px Burbank Big Rg Bk";
-				ctx.fillText(`Submitted By: ${tagName.username}`, 60, canvas.height - 50);
+				ctx.fillText(`Submitted By: ${tagName.username || "Not Specified"}`, 60, canvas.height - 50);
 				// Watermark
 				ctx.fillStyle = "#ffffff";
 				ctx.font = "italic 100px Burbank Big Rg Bk";
@@ -123,7 +123,7 @@ module.exports = {
 				let featuredY = 0;
 				let rendered = 0;
 
-				ctx.fillStyle = "##000000 ";
+				ctx.fillStyle = "#000000";
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
 
 				for(const itemStack in content) {
@@ -200,7 +200,7 @@ module.exports = {
 				// Name
 				ctx.fillStyle = "#ffffff";
 				ctx.font = "italic 100px Burbank Big Rg Bk";
-				ctx.fillText(`Submitted By: ${tagName.username || "Unknown User"}`, 60, canvas.height - 50);
+				ctx.fillText(`Submitted By: ${tagName.username || "Not Specified"}`, 60, canvas.height - 50);
 				// Watermark
 				ctx.fillStyle = "#ffffff";
 				ctx.font = "italic 100px Burbank Big Rg Bk";

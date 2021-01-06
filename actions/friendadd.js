@@ -9,40 +9,47 @@ module.exports = {
 
 		const tagName = ctx.from.id;
 
-		const logged = await deviceauth.findOne({
-			authorID: tagName,
-		});
+		try {
 
-		if (logged) {
-			const auth = new Auth();
+			const logged = await deviceauth.findOne({
+				authorID: tagName,
+			});
 
-			const onfo = await auth.login(null, tagName);
-			console.log(onfo.access_token);
-			sessions.set(tagName, onfo);
-		}
+			if (logged) {
+				const auth = new Auth();
 
-		const token = await sessions.get(tagName);
-
-		if (!token) {
-			return ctx.reply("❌ You are not logged in");
-		}
-
-		const accId = await sessions.get(`${tagName}-friend`);
-
-		await axios.post(`${Endpoints.FRIENDS_URL}/public/friends/${token.account_id}/${accId.id}`, {}, { headers: {
-			"Content-Type": "application/json",
-			"Authorization": `Bearer ${token.access_token}`,
-		} }).then((response) => {
-			console.log(response);
-			try {
-				ctx.reply(`✅ Successfully added *${accId.displayName}*`, { parse_mode: "markdown" });
+				const onfo = await auth.login(null, tagName);
+				console.log(onfo.access_token);
+				sessions.set(tagName, onfo);
 			}
-			catch {
-				ctx.reply(`✅ Successfully added ${accId.displayName}`);
+
+			const token = await sessions.get(tagName);
+
+			if (!token) {
+				return ctx.reply("❌ You are not logged in");
 			}
-		}).catch((err) => {
+
+			const accId = await sessions.get(`${tagName}-friend`);
+
+			await axios.post(`${Endpoints.FRIENDS_URL}/public/friends/${token.account_id}/${accId.id}`, {}, { headers: {
+				"Content-Type": "application/json",
+				"Authorization": `Bearer ${token.access_token}`,
+			} }).then((response) => {
+				console.log(response);
+				try {
+					ctx.reply(`✅ Successfully added *${accId.displayName}*`, { parse_mode: "markdown" });
+				}
+				catch {
+					ctx.reply(`✅ Successfully added ${accId.displayName}`);
+				}
+			}).catch((err) => {
+				console.error(err);
+				return ctx.reply(`❌ ${err.response.data.errorMessage}`);
+			});
+		}
+		catch(err) {
 			console.error(err);
-			return ctx.reply(`❌ ${err.response.data.errorMessage}`);
-		});
+			return ctx.reply(`❌ You encountered an error\n\n${err}`);
+		}
 	},
 };

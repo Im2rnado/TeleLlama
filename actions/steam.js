@@ -9,34 +9,41 @@ module.exports = {
 
 		const tagName = ctx.from.id;
 
-		const logged = await deviceauth.findOne({
-			authorID: tagName,
-		});
+		try {
 
-		if (logged) {
-			const auth = new Auth();
+			const logged = await deviceauth.findOne({
+				authorID: tagName,
+			});
 
-			const onfo = await auth.login(null, tagName);
-			console.log(onfo.access_token);
-			sessions.set(tagName, onfo);
+			if (logged) {
+				const auth = new Auth();
+
+				const onfo = await auth.login(null, tagName);
+				console.log(onfo.access_token);
+				sessions.set(tagName, onfo);
+			}
+
+			const token = await sessions.get(tagName);
+
+			if (!token) {
+				return ctx.reply("❌ You are not logged in");
+			}
+
+			await axios.delete(`https://account-public-service-prod03.ol.epicgames.com/account/api/public/account/${token.account_id}/externalAuths/steam`, { headers: {
+				"Content-Type": "application/json",
+				"Authorization": `Bearer ${token.access_token}`,
+			} }).then((response) => {
+				console.error(response.data);
+
+				ctx.reply("✅ Successfully Unlinked *Steam*", { parse_mode: "markdown" });
+			}).catch((err) => {
+				console.error(err);
+				return ctx.reply(`❌ ${err.response.data.errorMessage}`);
+			});
 		}
-
-		const token = await sessions.get(tagName);
-
-		if (!token) {
-			return ctx.reply("❌ You are not logged in");
-		}
-
-		await axios.delete(`https://account-public-service-prod03.ol.epicgames.com/account/api/public/account/${token.account_id}/externalAuths/steam`, { headers: {
-			"Content-Type": "application/json",
-			"Authorization": `Bearer ${token.access_token}`,
-		} }).then((response) => {
-			console.error(response.data);
-
-			ctx.reply("✅ Successfully Unlinked *Steam*", { parse_mode: "markdown" });
-		}).catch((err) => {
+		catch(err) {
 			console.error(err);
-			return ctx.reply(`❌ ${err.response.data.errorMessage}`);
-		});
+			return ctx.reply(`❌ You encountered an error\n\n${err}`);
+		}
 	},
 };
