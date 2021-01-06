@@ -50,9 +50,9 @@ module.exports = {
 
 		const keys = response.data;
 
-		let embed = [];
+		const embed = [];
 
-		if(!keys.length) embed = "None";
+		if(!keys.length) embed.push("None");
 
 		keys.forEach(el => {
 			embed.push(`Type: ${el.type}\nName: ${el.externalDisplayName}\nAdded On: ${moment.utc(el.dateAdded).format("dddd, MMMM Do YYYY, HH:mm:ss")}`);

@@ -200,7 +200,7 @@ module.exports = {
 				// Name
 				ctx.fillStyle = "#ffffff";
 				ctx.font = "italic 100px Burbank Big Rg Bk";
-				ctx.fillText(`Submitted By: ${tagName.username}`, 60, canvas.height - 50);
+				ctx.fillText(`Submitted By: ${tagName.username || "Unknown User"}`, 60, canvas.height - 50);
 				// Watermark
 				ctx.fillStyle = "#ffffff";
 				ctx.font = "italic 100px Burbank Big Rg Bk";

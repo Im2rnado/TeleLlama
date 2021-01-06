@@ -51,7 +51,7 @@ module.exports = {
 
 		let fembed = [];
 
-		if (!history.length) {
+		if (!history.length || !history) {
 			fembed = "No Gifts Found";
 		}
 		else {
