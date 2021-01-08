@@ -7,9 +7,9 @@ async function init() {
 
 	cron({ on: " 1 16 * * * " }, async function() {
 		console.log("autoshop");
-		let path = "./src/final/path.txt";
+		let path = "./final/path.txt";
 
-		if (fs.existsSync("./src/final/shop.png")) path = "./src/final/shop.png";
+		if (fs.existsSync("./final/shop.png")) path = "./final/shop.png";
 
 		fs.unlinkSync(path);
 
