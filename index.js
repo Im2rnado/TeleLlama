@@ -42,7 +42,7 @@ fs.readdirSync(`${__dirname}/actions/`).forEach(file => {
 	const action = require(`${__dirname}/actions/${file}`);
 
 	if (action.name) {
-                action(action.name,
+                try {
 		        app.action(action.name, ctx => {
 			        action.execute(ctx, sessions, awaitReply);
 		        });
