@@ -26,9 +26,15 @@ fs.readdirSync(`${__dirname}/commands/`).forEach(file => {
 	const command = require(`${__dirname}/commands/${file}`);
 
 	if (command.name) {
-		app.command(command.name, ctx => {
-			command.execute(ctx, sessions, awaitReply);
-		});
+                try {
+		        app.command(command.name, ctx => {
+			        command.execute(ctx, sessions, awaitReply);
+		        });
+                }
+                catch(e) {
+			console.error(e);
+			ctx.reply(`❌ An error has occurred: ${e}`);
+		}
 	}
 });
 
@@ -36,9 +42,15 @@ fs.readdirSync(`${__dirname}/actions/`).forEach(file => {
 	const action = require(`${__dirname}/actions/${file}`);
 
 	if (action.name) {
-		app.action(action.name, ctx => {
-			action.execute(ctx, sessions, awaitReply);
-		});
+                action(action.name,
+		        app.action(action.name, ctx => {
+			        action.execute(ctx, sessions, awaitReply);
+		        });
+                }
+                catch(e) {
+			console.error(e);
+			ctx.reply(`❌ An error has occurred: ${e}`);
+		}
 	}
 });
 
