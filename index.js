@@ -66,6 +66,7 @@ app.telegram.getMe().then(async (bot_informations) => {
 });
 
 app.on("text", async (ctx) => {
+        try {
 	const tagName = ctx.from.id;
 
 	const what = awaitReply.get(tagName);
@@ -315,6 +316,10 @@ app.on("text", async (ctx) => {
 			awaitReply.delete(tagName);
 			return ctx.reply(`❌ You do not own STW or you cannot set your Homebase Name to this name. *${err.response.data.errorMessage}*`, { parse_mode: "markdown" });
 		});
+	}
+        }
+        catch(e) {
+		console.error(e);
 	}
 });
 
