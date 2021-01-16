@@ -32,7 +32,6 @@ fs.readdirSync(`${__dirname}/commands/`).forEach(file => {
 			}
 			catch(e) {
 				console.error(e);
-				ctx.reply(`❌ An error has occurred: ${e}`);
 			}
 		});
 	}
